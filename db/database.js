@@ -68,7 +68,7 @@ if (adminCount.c === 0) {
   const bcrypt = require('bcryptjs');
   const hash = bcrypt.hashSync('admin1234', 10);
   db.prepare("INSERT INTO users (username, email, password, role) VALUES (?,?,?,?)").run(
-    'admin', 'admin@projekhard.pl', hash, 'admin'
+    'admin', 'kawulok.darek8@gmail.com', hash, 'admin'
   );
 }
 
