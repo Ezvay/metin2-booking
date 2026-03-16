@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap');
+
+:root {
+  --bg-deep:     #06080f;
+  --bg-card:     #0d1220;
+  --bg-panel:    #111827;
+  --border:      #1e2a42;
+  --border-glow: #c9900055;
+  --gold:        #c99000;
+  --gold-light:  #f0c040;
+  --gold-dim:    #8a6200;
+  --red:         #b52a2a;
+  --text:        #ddd4c0;
+  --text-muted:  #7a7060;
+  --text-bright: #f5e8cc;
+  --radius:      6px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg-deep);
+  color: var(--text);
+  font-family: 'Crimson Pro', Georgia, serif;
+  font-size: 17px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(ellipse 80% 50% at 50% -10%, #c9900015 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem; height: 64px;
+  background: rgba(6,8,15,0.95);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+
+.nav-logo {
+  font-family: 'Cinzel', serif; font-weight: 900; font-size: 1.3rem;
+  color: var(--gold-light); text-decoration: none; letter-spacing: 0.05em;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.nav-logo span { color: var(--red); }
+.nav-links { display: flex; align-items: center; gap: 1.5rem; }
+.nav-links a {
+  color: var(--text-muted); text-decoration: none;
+  font-family: 'Cinzel', serif; font-size: 0.8rem;
+  letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.2s;
+}
+.nav-links a:hover, .nav-links a.active { color: var(--gold-light); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.6rem 1.4rem; border-radius: var(--radius);
+  font-family: 'Cinzel', serif; font-size: 0.8rem; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  cursor: pointer; transition: all 0.2s; text-decoration: none; border: none;
+}
+.btn-gold {
+  background: linear-gradient(135deg, #c99000, #f0c040, #c99000);
+  background-size: 200% 100%; background-position: 100%; color: #1a1000;
+}
+.btn-gold:hover { background-position: 0%; box-shadow: 0 0 24px #c9900055; }
+.btn-outline { background: transparent; color: var(
