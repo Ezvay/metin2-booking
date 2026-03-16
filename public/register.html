@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rejestracja — Projekt Hard</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;}
+    .auth-box{width:100%;max-width:420px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem;animation:fadeUp .5s ease;}
+    .auth-logo{text-align:center;font-family:'Cinzel',serif;font-size:1.5rem;font-weight:900;color:var(--gold-light);margin-bottom:2rem;}
+    .auth-logo span{color:var(--red);}
+    .auth-title{font-family:'Cinzel',serif;font-size:1.2rem;color:var(--text-bright);margin-bottom:1.5rem;}
+    .auth-footer{text-align:center;margin-top:1.5rem;color:var(--text-muted);font-size:.9rem;}
+    .auth-footer a{color:var(--gold);text-decoration:none;}
+  </style>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-box">
+    <div class="auth-logo">⚔️ Projekt <span>Hard</span></div>
+    <div class="auth-title">Utwórz konto</div>
+    <div id="alert"></div>
+    <div class="form-group">
+      <label class="form-label">Nazwa użytkownika (3–20 znaków)</label>
+      <input type="text" id="username" class="form-control" placeholder="TwojaPostać">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input type="email" id="email" class="form-control" placeholder="email@example.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Hasło (min. 6 znaków)</label>
+      <input type="password" id="password" class="form-control" placeholder="••••••••">
+    </div>
+    <button class="btn btn-gold" style="width:100%" id="regBtn" onclick="doRegister()">Zarejestruj się</button>
+    <div class="auth-footer">Masz już konto? <a href="/login">Zaloguj się</a></div>
+  </div>
+</div>
+<script>
+  async function doRegister(){
+    const btn=document.getElementById('regBtn');
+    btn.disabled=true;btn.textContent='Rejestracja...';
+    const res=await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:document.getElementById('username').value,email:document.getElementById('email').value,password:document.getElementById('password').value})
+    }).then(r=>r.json());
+    if(res.success){location.href='/';}
+    else{document.getElementById('alert').innerHTML=`<div class="alert alert-error">${res.errors.join('<br>')}</div>`;btn.disabled=false;btn.textContent='Zarejestruj się';}
+  }
+</script>
+</body>
+</html>
