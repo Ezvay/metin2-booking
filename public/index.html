@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projekt Hard — Rezerwacje Expienia</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .stats-bar { display:flex; justify-content:center; gap:3rem; flex-wrap:wrap; padding:2rem 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin:2rem 0; }
+    .stat { text-align:center; }
+    .stat-value { font-family:'Cinzel',serif; font-size:2rem; font-weight:900; color:var(--gold-light); }
+    .stat-label { font-size:0.8rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; }
+    .how-step { display:flex; gap:1.2rem; align-items:flex-start; }
+    .step-num { font-family:'Cinzel',serif; font-size:2rem; font-weight:900; color:var(--gold-dim); line-height:1; min-width:2rem; }
+    .step-title { font-family:'Cinzel',serif; font-size:1rem; color:var(--text-bright); margin-bottom:0.3rem; }
+    .step-desc { color:var(--text-muted); font-size:0.9rem; }
+    .classes-grid { display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin:1.5rem 0; }
+    .class-tag { padding:0.3rem 0.8rem; border:1px solid var(--border); border-radius:4px; font-family:'Cinzel',serif; font-size:0.7rem; color:var(--text-muted); letter-spacing:0.08em; }
+  </style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="/">⚔️ Projekt <span>Hard</span></a>
+  <div class="nav-links">
+    <a href="/" class="active">Strona główna</a>
+    <a href="/book">Rezerwuj</a>
+    <a href="/dashboard" id="navDashboard" style="display:none">Moje rezerwacje</a>
+    <a href="/admin" id="navAdmin" style="display:none">Panel admina</a>
+    <span id="navUser" style="color:var(--gold);font-family:'Cinzel',serif;font-size:0.8rem;display:none"></span>
+    <form action="/logout" method="post" style="display:none" id="logoutForm">
+      <button class="btn btn-outline btn-sm">Wyloguj</button>
+    </form>
+    <a href="/login" class="btn btn-outline btn-sm" id="navLogin">Zaloguj</a>
+    <a href="/register" class="btn btn-gold btn-sm" id="navRegister">Zarejestruj</a>
+  </div>
+</nav>
+<main>
+  <section class="hero container">
+    <p class="hero-eyebrow">🔥 Serwer Projekt Hard — Metin2</p>
+    <h1 class="hero-title">Zarezerwuj<br><span>Expienie</span> Postaci</h1>
+    <p class="hero-sub">Profesjonalne leveling przez doświadczonych graczy. Szybko, bezpiecznie, uczciwie.</p>
+    <div class="hero-cta">
+      <a href="/book" class="btn btn-gold">⚔️ Zarezerwuj teraz</a>
+      <a href="#services" class="btn btn-outline">Zobacz oferty</a>
+    </div>
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-value">200+</div><div class="stat-label">Rezerwacji</div></div>
+      <div class="stat"><div class="stat-value">98%</div><div class="stat-label">Zadowolonych graczy</div></div>
+      <div class="stat"><div class="stat-value">4</div><div class="stat-label">Pakiety levelingu</div></div>
+      <div class="stat"><div class="stat-value">24h</div><div class="stat-label">Wsparcie Discord</div></div>
+    </div>
+  </section>
+  <section class="section" id="services">
+    <div class="container">
+      <h2 class="section-title">Dostępne <span>Pakiety</span></h2>
+      <p class="section-sub">Wybierz pakiet odpowiedni dla swojej postaci</p>
+      <div class="grid-2" id="servicesList"><div class="spinner"></div></div>
+    </div>
+  </section>
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Obsługiwane <span>Klasy</span></h2>
+      <p class="section-sub">Expimy wszystkie klasy dostępne na serwerze</p>
+      <div class="classes-grid">
+        <span class="class-tag">Wojownik</span><span class="class-tag">Ninja</span>
+        <span class="class-tag">Sura</span><span class="class-tag">Szaman</span>
+        <span class="class-tag">Smoczarz</span><span class="class-tag">Rycerz</span>
+        <span class="class-tag">Lupus</span>
+      </div>
+    </div>
+  </section>
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Jak to <span>Działa?</span></h2>
+      <p class="section-sub">Prosty proces w 4 krokach</p>
+      <div class="grid-2">
+        <div class="card"><div class="how-step"><div class="step-num">01</div><div><div class="step-title">Zarejestruj konto</div><div class="step-desc">Stwórz darmowe konto na naszej stronie.</div></div></div></div>
+        <div class="card"><div class="how-step"><div class="step-num">02</div><div><div class="step-title">Wybierz pakiet</div><div class="step-desc">Wybierz odpowiedni pakiet levelingu.</div></div></div></div>
+        <div class="card"><div class="how-step"><div class="step-num">03</div><div><div class="step-title">Wypełnij formularz</div><div class="step-desc">Podaj nazwę postaci, klasę i termin.</div></div></div></div>
+        <div class="card"><div class="how-step"><div class="step-num">04</div><div><div class="step-title">Czekaj na potwierdzenie</div><div class="step-desc">Skontaktujemy się przez Discord.</div></div></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer><p>⚔️ <strong style="color:var(--gold-light)">Projekt Hard</strong> — Metin2 Leveling Service</p></footer>
+<script>
+  fetch('/api/session').then(r=>r.json()).then(d=>{
+    if(d.loggedIn){
+      document.getElementById('navLogin').style.display='none';
+      document.getElementById('navRegister').style.display='none';
+      document.getElementById('navUser').style.display='';
+      document.getElementById('navUser').textContent='👤 '+d.username;
+      document.getElementById('logoutForm').style.display='';
+      document.getElementById('navDashboard').style.display='';
+      if(d.role==='admin') document.getElementById('navAdmin').style.display='';
+    }
+  });
+  fetch('/api/services').then(r=>r.json()).then(services=>{
+    document.getElementById('servicesList').innerHTML=services.map(s=>`
+      <div class="service-card" onclick="location.href='/book?service=${s.id}'">
+        <div class="service-levels">Poziom ${s.level_from} → ${s.level_to}</div>
+        <div class="service-name">${s.name}</div>
+        <div class="service-desc">${s.description}</div>
+        <div class="service-meta">
+          <div class="service-price">${s.price_gold.toLocaleString()} <small>Gold</small></div>
+          <div class="service-duration">⏳ ~${s.duration_hours}h</div>
+        </div>
+      </div>`).join('');
+  });
+</script>
+</body>
+</html>
