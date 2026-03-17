@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/database');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { sendBookingNotification, handleInteraction } = require('../discord');
+const crypto = require('crypto');
 
 // GET /api/session
 router.get('/api/session', (req, res) => {
@@ -18,7 +20,7 @@ router.get('/api/services', async (req, res) => {
   res.json(services);
 });
 
-// GET /api/calendar — public calendar of all bookings with members
+// GET /api/calendar
 router.get('/api/calendar', async (req, res) => {
   const bookings = await db.all2(`
     SELECT b.id, b.booked_date, b.booked_time, b.status, b.note,
@@ -28,22 +30,19 @@ router.get('/api/calendar', async (req, res) => {
     WHERE b.status != 'rejected'
     ORDER BY b.booked_date ASC, b.booked_time ASC
   `);
-
   for (const booking of bookings) {
     booking.members = await db.all2(`
       SELECT pm.id, pm.char_name, pm.char_class, pm.char_level, pm.target_level, pm.contact_discord, u.username
-      FROM party_members pm
-      JOIN users u ON pm.user_id = u.id
+      FROM party_members pm JOIN users u ON pm.user_id = u.id
       WHERE pm.booking_id = ?
     `, [booking.id]);
     booking.spots_taken = booking.members.length;
     booking.spots_left = booking.party_size - booking.spots_taken;
   }
-
   res.json(bookings);
 });
 
-// POST /api/bookings — create new booking slot + join as first member
+// POST /api/bookings
 router.post('/api/bookings', requireAuth, async (req, res) => {
   const { service_id, char_name, char_class, char_level, target_level, contact_discord, note, booked_date, booked_time } = req.body;
   if (!service_id || !char_name || !char_class || !char_level || !target_level || !booked_date || !booked_time) {
@@ -52,7 +51,6 @@ router.post('/api/bookings', requireAuth, async (req, res) => {
   const service = await db.get2('SELECT * FROM services WHERE id=? AND available=1', [service_id]);
   if (!service) return res.json({ success: false, error: 'Usługa niedostępna.' });
 
-  // Check if user already has a booking at this time
   const conflict = await db.get2(`
     SELECT pm.id FROM party_members pm
     JOIN bookings b ON pm.booking_id = b.id
@@ -68,18 +66,35 @@ router.post('/api/bookings', requireAuth, async (req, res) => {
     `INSERT INTO party_members (booking_id, user_id, char_name, char_class, char_level, target_level, contact_discord) VALUES (?,?,?,?,?,?,?)`,
     [result.lastID, req.session.userId, char_name, char_class, char_level, target_level, contact_discord || '']
   );
+
+  // Discord notification
+  sendBookingNotification({
+    type: 'new_booking',
+    bookingId: result.lastID,
+    serviceName: service.name,
+    partySize: service.party_size,
+    date: booked_date,
+    time: booked_time,
+    charName: char_name,
+    charClass: char_class,
+    charLevel: char_level,
+    targetLevel: target_level,
+    username: req.session.username,
+    discord: contact_discord || '',
+    note: note || ''
+  }).catch(console.error);
+
   res.json({ success: true });
 });
 
-// POST /api/bookings/:id/join — join an existing party slot
+// POST /api/bookings/:id/join
 router.post('/api/bookings/:id/join', requireAuth, async (req, res) => {
   const { char_name, char_class, char_level, target_level, contact_discord } = req.body;
   if (!char_name || !char_class || !char_level || !target_level) {
     return res.json({ success: false, error: 'Wypełnij wszystkie wymagane pola.' });
   }
-
   const booking = await db.get2(`
-    SELECT b.*, s.party_size FROM bookings b
+    SELECT b.*, s.party_size, s.name as service_name, s.price_sm FROM bookings b
     JOIN services s ON b.service_id = s.id
     WHERE b.id = ? AND b.status != 'rejected'
   `, [req.params.id]);
@@ -91,7 +106,6 @@ router.post('/api/bookings/:id/join', requireAuth, async (req, res) => {
   const alreadyIn = members.find(m => m.user_id === req.session.userId);
   if (alreadyIn) return res.json({ success: false, error: 'Jesteś już zapisany do tego party.' });
 
-  // Check time conflict
   const conflict = await db.get2(`
     SELECT pm.id FROM party_members pm
     JOIN bookings b ON pm.booking_id = b.id
@@ -103,6 +117,23 @@ router.post('/api/bookings/:id/join', requireAuth, async (req, res) => {
     `INSERT INTO party_members (booking_id, user_id, char_name, char_class, char_level, target_level, contact_discord) VALUES (?,?,?,?,?,?,?)`,
     [req.params.id, req.session.userId, char_name, char_class, char_level, target_level, contact_discord || '']
   );
+
+  // Discord notification
+  sendBookingNotification({
+    type: 'joined_party',
+    bookingId: booking.id,
+    serviceName: booking.service_name,
+    partySize: booking.party_size,
+    date: booking.booked_date,
+    time: booking.booked_time,
+    charName: char_name,
+    charClass: char_class,
+    charLevel: char_level,
+    targetLevel: target_level,
+    username: req.session.username,
+    discord: contact_discord || ''
+  }).catch(console.error);
+
   res.json({ success: true });
 });
 
@@ -117,7 +148,6 @@ router.get('/api/my-bookings', requireAuth, async (req, res) => {
     WHERE pm.user_id = ?
     ORDER BY b.booked_date DESC, b.booked_time DESC
   `, [req.session.userId]);
-
   for (const m of members) {
     m.party_members = await db.all2(`
       SELECT pm2.char_name, pm2.char_class, u.username
@@ -125,7 +155,6 @@ router.get('/api/my-bookings', requireAuth, async (req, res) => {
       WHERE pm2.booking_id = ?
     `, [m.booking_id]);
   }
-
   res.json(members);
 });
 
@@ -151,4 +180,10 @@ router.patch('/api/admin/bookings/:id', requireAdmin, async (req, res) => {
   res.json({ success: true });
 });
 
-module.exports = router;
+// POST /api/discord/interactions — Discord button clicks
+router.post('/api/discord/interactions', express.json(), async (req, res) => {
+  const signature = req.headers['x-signature-ed25519'];
+  const timestamp = req.headers['x-signature-timestamp'];
+
+  // Verify Discord signature
+  const PUBLIC
