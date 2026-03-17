@@ -175,21 +175,32 @@ router.post('/api/discord/interactions', async (req, res) => {
     const timestamp = req.headers['x-signature-timestamp'];
     const publicKey = process.env.DISCORD_PUBLIC_KEY;
 
+    const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(JSON.stringify(req.body));
+    const bodyStr = rawBody.toString('utf-8');
+
     if (publicKey && signature && timestamp) {
       const nacl = require('tweetnacl');
-      const bodyStr = JSON.stringify(req.body);
       const isValid = nacl.sign.detached.verify(
         Buffer.from(timestamp + bodyStr),
         Buffer.from(signature, 'hex'),
         Buffer.from(publicKey, 'hex')
       );
-      if (!isValid) return res.status(401).json({ error: 'Invalid signature' });
+      if (!isValid) {
+        console.log('Discord interaction: invalid signature');
+        return res.status(401).json({ error: 'Invalid signature' });
+      }
     }
 
-    const interaction = req.body;
-    if (interaction.type === 1) return res.json({ type: 1 });
+    const interaction = JSON.parse(bodyStr);
+    console.log('Discord interaction received:', interaction.type, interaction.data?.custom_id);
+
+    if (interaction.type === 1) {
+      console.log('Discord PING responded');
+      return res.json({ type: 1 });
+    }
 
     const response = await handleInteraction(interaction, db);
+    console.log('Discord interaction handled:', JSON.stringify(response).slice(0, 100));
     res.json(response);
   } catch (err) {
     console.error('Interaction error:', err);
