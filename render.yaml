@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: metin2-booking
+    name: patologiczne-expowisko
     runtime: node
     buildCommand: npm install
     startCommand: node server.js

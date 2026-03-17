@@ -8,10 +8,9 @@ if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
 const db = new sqlite3.Database(DB_PATH);
 
-// Promisify helper
-db.run2 = (sql, params=[]) => new Promise((res, rej) => db.run(sql, params, function(err){ err ? rej(err) : res(this); }));
-db.get2 = (sql, params=[]) => new Promise((res, rej) => db.get(sql, params, (err, row) => err ? rej(err) : res(row)));
-db.all2 = (sql, params=[]) => new Promise((res, rej) => db.all(sql, params, (err, rows) => err ? rej(err) : res(rows)));
+db.run2 = (sql, params = []) => new Promise((res, rej) => db.run(sql, params, function(err) { err ? rej(err) : res(this); }));
+db.get2 = (sql, params = []) => new Promise((res, rej) => db.get(sql, params, (err, row) => err ? rej(err) : res(row)));
+db.all2 = (sql, params = []) => new Promise((res, rej) => db.all(sql, params, (err, rows) => err ? rej(err) : res(rows)));
 
 async function init() {
   await db.run2(`CREATE TABLE IF NOT EXISTS users (
@@ -22,6 +21,7 @@ async function init() {
     role TEXT DEFAULT 'user',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
+
   await db.run2(`CREATE TABLE IF NOT EXISTS services (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -33,6 +33,7 @@ async function init() {
     available INTEGER DEFAULT 1,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
+
   await db.run2(`CREATE TABLE IF NOT EXISTS bookings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -54,10 +55,9 @@ async function init() {
   const count = await db.get2('SELECT COUNT(*) as c FROM services');
   if (count.c === 0) {
     const services = [
-      ['Expienie 1–60', 'Szybki leveling dla nowych graczy od poziomu 1 do 60.', 1, 60, 500, 3],
-      ['Expienie 61–80', 'Leveling przez średnie mapy. Potrzebna ekwipunek +6.', 61, 80, 1200, 5],
-      ['Expienie 81–99', 'Grind przez Górę Wiecznego Śniegu i okolice.', 81, 99, 2500, 8],
-      ['Expienie 99–105', 'Endgame leveling, wymaga dobrego eqp.', 99, 105, 5000, 12],
+      ['Expienie Solo', 'Expienie w pojedynkę dla graczy Chunjo. Poziomy 45–75. Cena: 5000 SM/h.', 45, 75, 5000, 1],
+      ['Expienie Duo', 'Expienie w 2 osoby dla graczy Chunjo. Poziomy 45–75. Cena: 2000 SM/h od osoby.', 45, 75, 2000, 1],
+      ['Expienie Trio', 'Expienie w 3 osoby dla graczy Chunjo. Poziomy 45–75. Cena: 1500 SM/h od osoby.', 45, 75, 1500, 1],
     ];
     for (const s of services) {
       await db.run2(`INSERT INTO services (name, description, level_from, level_to, price_gold, duration_hours) VALUES (?,?,?,?,?,?)`, s);
@@ -69,7 +69,7 @@ async function init() {
     const bcrypt = require('bcryptjs');
     const hash = await bcrypt.hash('admin1234', 10);
     await db.run2("INSERT INTO users (username, email, password, role) VALUES (?,?,?,?)",
-      ['admin', 'admin@projekhard.pl', hash, 'admin']);
+      ['admin', 'admin@expowisko.pl', hash, 'admin']);
   }
 }
 

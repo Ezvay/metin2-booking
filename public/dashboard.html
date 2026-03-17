@@ -3,30 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Moje rezerwacje — Projekt Hard</title>
+  <title>Moje rezerwacje — Patologiczne Expowisko</title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
     .page-wrap{max-width:900px;margin:0 auto;padding:3rem 1.5rem;}
     .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
     .page-title{font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:var(--text-bright);}
-    .page-title span{color:var(--gold-light);}
+    .page-title span{color:var(--red-light);}
     .empty-state{text-align:center;padding:4rem 1rem;color:var(--text-muted);}
     .booking-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem;position:relative;overflow:hidden;}
-    .booking-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4;}
+    .booking-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--red),transparent);opacity:.4;}
     .booking-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem;}
     .booking-service{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--text-bright);}
     .booking-meta{display:flex;gap:1.5rem;flex-wrap:wrap;color:var(--text-muted);font-size:.9rem;}
   </style>
 </head>
 <body>
+<div class="chunjo-banner">
+  <strong style="color:#ff2222;letter-spacing:.2em">CHUNJO</strong> — Patologiczne Expowisko
+</div>
 <nav>
-  <a class="nav-logo" href="/">⚔️ Projekt <span style="color:var(--red)">Hard</span></a>
+  <a class="nav-logo" href="/">⚔️ Patologiczne <span>Expowisko</span></a>
   <div class="nav-links">
     <a href="/">Strona główna</a>
     <a href="/book">Rezerwuj</a>
     <a href="/dashboard" class="active">Moje rezerwacje</a>
     <a href="/admin" id="navAdmin" style="display:none">Panel admina</a>
-    <span id="navUser" style="color:var(--gold);font-family:'Cinzel',serif;font-size:.8rem"></span>
+    <span id="navUser" style="color:var(--red-light);font-family:'Cinzel',serif;font-size:.8rem"></span>
     <form action="/logout" method="post" id="logoutForm">
       <button class="btn btn-outline btn-sm">Wyloguj</button>
     </form>
@@ -41,7 +44,7 @@
   <div id="content"><div class="spinner"></div></div>
 </div>
 </main>
-<footer><p>⚔️ <strong style="color:var(--gold-light)">Projekt Hard</strong> — Metin2 Leveling Service</p></footer>
+<footer><p>⚔️ <strong style="color:var(--red-light)">Patologiczne Expowisko</strong> — Metin2 Leveling dla Chunjo</p></footer>
 <script>
   const statusLabel={pending:'Oczekuje',active:'W toku',done:'Ukończone',rejected:'Odrzucone'};
   const statusBadge={pending:'badge-pending',active:'badge-active',done:'badge-done',rejected:'badge-rejected'};
@@ -71,7 +74,7 @@
           <span>⚔️ ${b.char_name} (${b.char_class})</span>
           <span>📈 Poz. ${b.char_level} → ${b.target_level}</span>
           <span>📅 ${b.booked_date} o ${b.booked_time}</span>
-          <span>💰 ${b.price_gold?.toLocaleString()} Gold</span>
+          <span>💰 ${b.price_gold?.toLocaleString()} SM/h</span>
           ${b.contact_discord?`<span>💬 ${b.contact_discord}</span>`:''}
         </div>
         ${b.note?`<div style="margin-top:.8rem;padding:.6rem .8rem;background:#0a0e1a;border-radius:4px;color:var(--text-muted);font-size:.9rem">📝 ${b.note}</div>`:''}

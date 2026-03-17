@@ -3,30 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Projekt Hard — Rezerwacje Expienia</title>
+  <title>Patologiczne Expowisko — Rezerwacje Expienia</title>
   <link rel="stylesheet" href="/css/style.css">
-  <style>
-    .stats-bar { display:flex; justify-content:center; gap:3rem; flex-wrap:wrap; padding:2rem 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin:2rem 0; }
-    .stat { text-align:center; }
-    .stat-value { font-family:'Cinzel',serif; font-size:2rem; font-weight:900; color:var(--gold-light); }
-    .stat-label { font-size:0.8rem; color:var(--text-muted); letter-spacing:0.1em; text-transform:uppercase; }
-    .how-step { display:flex; gap:1.2rem; align-items:flex-start; }
-    .step-num { font-family:'Cinzel',serif; font-size:2rem; font-weight:900; color:var(--gold-dim); line-height:1; min-width:2rem; }
-    .step-title { font-family:'Cinzel',serif; font-size:1rem; color:var(--text-bright); margin-bottom:0.3rem; }
-    .step-desc { color:var(--text-muted); font-size:0.9rem; }
-    .classes-grid { display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center; margin:1.5rem 0; }
-    .class-tag { padding:0.3rem 0.8rem; border:1px solid var(--border); border-radius:4px; font-family:'Cinzel',serif; font-size:0.7rem; color:var(--text-muted); letter-spacing:0.08em; }
-  </style>
 </head>
 <body>
+
+<!-- CHUNJO BANNER -->
+<div class="chunjo-banner">
+  <span class="chunjo-flag">
+    <svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg">
+      <rect width="28" height="20" fill="#8b0000"/>
+      <rect width="28" height="7" fill="#cc0000"/>
+      <rect y="13" width="28" height="7" fill="#660000"/>
+      <circle cx="14" cy="10" r="4" fill="#ff2222" opacity="0.9"/>
+      <circle cx="14" cy="10" r="2" fill="#ffaaaa"/>
+    </svg>
+  </span>
+  Oferta wyłącznie dla graczy królestwa
+  <strong style="color:#ff2222;letter-spacing:.25em">CHUNJO</strong>
+  <span class="chunjo-flag">
+    <svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg">
+      <rect width="28" height="20" fill="#8b0000"/>
+      <rect width="28" height="7" fill="#cc0000"/>
+      <rect y="13" width="28" height="7" fill="#660000"/>
+      <circle cx="14" cy="10" r="4" fill="#ff2222" opacity="0.9"/>
+      <circle cx="14" cy="10" r="2" fill="#ffaaaa"/>
+    </svg>
+  </span>
+</div>
+
 <nav>
-  <a class="nav-logo" href="/">⚔️ Projekt <span>Hard</span></a>
+  <a class="nav-logo" href="/">⚔️ Patologiczne <span>Expowisko</span></a>
   <div class="nav-links">
     <a href="/" class="active">Strona główna</a>
     <a href="/book">Rezerwuj</a>
     <a href="/dashboard" id="navDashboard" style="display:none">Moje rezerwacje</a>
     <a href="/admin" id="navAdmin" style="display:none">Panel admina</a>
-    <span id="navUser" style="color:var(--gold);font-family:'Cinzel',serif;font-size:0.8rem;display:none"></span>
+    <span id="navUser" style="color:var(--red-light);font-family:'Cinzel',serif;font-size:0.8rem;display:none"></span>
     <form action="/logout" method="post" style="display:none" id="logoutForm">
       <button class="btn btn-outline btn-sm">Wyloguj</button>
     </form>
@@ -34,55 +47,83 @@
     <a href="/register" class="btn btn-gold btn-sm" id="navRegister">Zarejestruj</a>
   </div>
 </nav>
+
 <main>
   <section class="hero container">
-    <p class="hero-eyebrow">🔥 Serwer Projekt Hard — Metin2</p>
-    <h1 class="hero-title">Zarezerwuj<br><span>Expienie</span> Postaci</h1>
-    <p class="hero-sub">Profesjonalne leveling przez doświadczonych graczy. Szybko, bezpiecznie, uczciwie.</p>
+    <p class="hero-eyebrow">
+      <svg width="20" height="14" viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg" style="border:1px solid #660000;border-radius:2px">
+        <rect width="28" height="20" fill="#8b0000"/>
+        <rect width="28" height="7" fill="#cc0000"/>
+        <rect y="13" width="28" height="7" fill="#660000"/>
+        <circle cx="14" cy="10" r="4" fill="#ff2222" opacity="0.9"/>
+        <circle cx="14" cy="10" r="2" fill="#ffaaaa"/>
+      </svg>
+      Chunjo — Serwer Projekt Hard — Metin2
+      <svg width="20" height="14" viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg" style="border:1px solid #660000;border-radius:2px">
+        <rect width="28" height="20" fill="#8b0000"/>
+        <rect width="28" height="7" fill="#cc0000"/>
+        <rect y="13" width="28" height="7" fill="#660000"/>
+        <circle cx="14" cy="10" r="4" fill="#ff2222" opacity="0.9"/>
+        <circle cx="14" cy="10" r="2" fill="#ffaaaa"/>
+      </svg>
+    </p>
+    <h1 class="hero-title">Patologiczne<br><span>Expowisko</span></h1>
+    <p class="hero-sub">Profesjonalne expienie dla graczy Chunjo. Szybko, tanio, bez bólu głowy.</p>
     <div class="hero-cta">
       <a href="/book" class="btn btn-gold">⚔️ Zarezerwuj teraz</a>
-      <a href="#services" class="btn btn-outline">Zobacz oferty</a>
+      <a href="#services" class="btn btn-outline">Zobacz pakiety</a>
     </div>
+
     <div class="stats-bar">
       <div class="stat"><div class="stat-value">200+</div><div class="stat-label">Rezerwacji</div></div>
       <div class="stat"><div class="stat-value">98%</div><div class="stat-label">Zadowolonych graczy</div></div>
-      <div class="stat"><div class="stat-value">4</div><div class="stat-label">Pakiety levelingu</div></div>
+      <div class="stat"><div class="stat-value">3</div><div class="stat-label">Pakiety levelingu</div></div>
       <div class="stat"><div class="stat-value">24h</div><div class="stat-label">Wsparcie Discord</div></div>
     </div>
   </section>
+
   <section class="section" id="services">
     <div class="container">
       <h2 class="section-title">Dostępne <span>Pakiety</span></h2>
-      <p class="section-sub">Wybierz pakiet odpowiedni dla swojej postaci</p>
-      <div class="grid-2" id="servicesList"><div class="spinner"></div></div>
+      <p class="section-sub">Poziomy 45–75 · Płatność w Smoczych Monetach</p>
+      <div class="grid-3" id="servicesList"><div class="spinner"></div></div>
     </div>
   </section>
+
   <section class="section">
     <div class="container">
       <h2 class="section-title">Obsługiwane <span>Klasy</span></h2>
-      <p class="section-sub">Expimy wszystkie klasy dostępne na serwerze</p>
+      <p class="section-sub">Expimy wszystkie klasy dostępne na serwerze Projekt Hard</p>
       <div class="classes-grid">
-        <span class="class-tag">Wojownik</span><span class="class-tag">Ninja</span>
-        <span class="class-tag">Sura</span><span class="class-tag">Szaman</span>
-        <span class="class-tag">Smoczarz</span><span class="class-tag">Rycerz</span>
+        <span class="class-tag">Wojownik</span>
+        <span class="class-tag">Ninja</span>
+        <span class="class-tag">Sura</span>
+        <span class="class-tag">Szaman</span>
+        <span class="class-tag">Smoczarz</span>
+        <span class="class-tag">Rycerz</span>
         <span class="class-tag">Lupus</span>
       </div>
     </div>
   </section>
+
   <section class="section">
     <div class="container">
       <h2 class="section-title">Jak to <span>Działa?</span></h2>
       <p class="section-sub">Prosty proces w 4 krokach</p>
       <div class="grid-2">
-        <div class="card"><div class="how-step"><div class="step-num">01</div><div><div class="step-title">Zarejestruj konto</div><div class="step-desc">Stwórz darmowe konto na naszej stronie.</div></div></div></div>
-        <div class="card"><div class="how-step"><div class="step-num">02</div><div><div class="step-title">Wybierz pakiet</div><div class="step-desc">Wybierz odpowiedni pakiet levelingu.</div></div></div></div>
-        <div class="card"><div class="how-step"><div class="step-num">03</div><div><div class="step-title">Wypełnij formularz</div><div class="step-desc">Podaj nazwę postaci, klasę i termin.</div></div></div></div>
-        <div class="card"><div class="how-step"><div class="step-num">04</div><div><div class="step-title">Czekaj na potwierdzenie</div><div class="step-desc">Skontaktujemy się przez Discord.</div></div></div></div>
+        <div class="card fade-up" style="animation-delay:.1s"><div class="how-step"><div class="step-num">01</div><div><div class="step-title">Zarejestruj konto</div><div class="step-desc">Stwórz darmowe konto na stronie.</div></div></div></div>
+        <div class="card fade-up" style="animation-delay:.2s"><div class="how-step"><div class="step-num">02</div><div><div class="step-title">Wybierz pakiet</div><div class="step-desc">Solo, Duo lub Trio — jak wolisz.</div></div></div></div>
+        <div class="card fade-up" style="animation-delay:.3s"><div class="how-step"><div class="step-num">03</div><div><div class="step-title">Wypełnij formularz</div><div class="step-desc">Podaj nazwę postaci i termin.</div></div></div></div>
+        <div class="card fade-up" style="animation-delay:.4s"><div class="how-step"><div class="step-num">04</div><div><div class="step-title">Czekaj na potwierdzenie</div><div class="step-desc">Odezwiemy się przez Discord.</div></div></div></div>
       </div>
     </div>
   </section>
 </main>
-<footer><p>⚔️ <strong style="color:var(--gold-light)">Projekt Hard</strong> — Metin2 Leveling Service</p></footer>
+
+<footer>
+  <p>⚔️ <strong style="color:var(--red-light)">Patologiczne Expowisko</strong> — Metin2 Leveling dla Chunjo &nbsp;·&nbsp; Nie jesteśmy oficjalną stroną serwera Projekt Hard.</p>
+</footer>
+
 <script>
   fetch('/api/session').then(r=>r.json()).then(d=>{
     if(d.loggedIn){
@@ -95,15 +136,18 @@
       if(d.role==='admin') document.getElementById('navAdmin').style.display='';
     }
   });
+
   fetch('/api/services').then(r=>r.json()).then(services=>{
-    document.getElementById('servicesList').innerHTML=services.map(s=>`
+    const icons = ['🗡️', '⚔️', '🔱'];
+    const labels = ['Solo', 'Duo', 'Trio'];
+    document.getElementById('servicesList').innerHTML=services.map((s,i)=>`
       <div class="service-card" onclick="location.href='/book?service=${s.id}'">
-        <div class="service-levels">Poziom ${s.level_from} → ${s.level_to}</div>
-        <div class="service-name">${s.name}</div>
+        <div class="service-levels">Poziom ${s.level_from}–${s.level_to} · ${labels[i]||''}</div>
+        <div class="service-name">${icons[i]||'⚔️'} ${s.name}</div>
         <div class="service-desc">${s.description}</div>
         <div class="service-meta">
-          <div class="service-price">${s.price_gold.toLocaleString()} <small>Gold</small></div>
-          <div class="service-duration">⏳ ~${s.duration_hours}h</div>
+          <div class="service-price">${s.price_gold.toLocaleString()} <small>SM/h</small></div>
+          <div class="service-duration">od osoby</div>
         </div>
       </div>`).join('');
   });

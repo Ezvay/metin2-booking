@@ -1,7 +1,7 @@
 {
-  "name": "metin2-booking",
+  "name": "patologiczne-expowisko",
   "version": "1.0.0",
-  "description": "System rezerwacji expienia - Projekt Hard Metin2",
+  "description": "System rezerwacji expienia - Patologiczne Expowisko Metin2",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
