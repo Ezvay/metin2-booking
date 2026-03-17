@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rejestracja — Patologiczne Expowisko</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <svg width="24" height="17" viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg" style="border:1px solid var(--chunjo-border);border-radius:2px"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg>
+      Patologiczne <span>Expowisko</span>
+    </div>
+    <div class="auth-title">Utwórz konto</div>
+    <div id="alert"></div>
+    <div class="form-group"><label class="form-label">Nazwa użytkownika (3–20 znaków)</label><input type="text" id="username" class="form-control" placeholder="TwojaPostać"></div>
+    <div class="form-group"><label class="form-label">Email</label><input type="email" id="email" class="form-control" placeholder="email@example.com"></div>
+    <div class="form-group"><label class="form-label">Hasło (min. 6 znaków)</label><input type="password" id="password" class="form-control" placeholder="••••••••"></div>
+    <button class="btn btn-gold" style="width:100%" id="regBtn" onclick="doRegister()">Zarejestruj się</button>
+    <div class="auth-footer">Masz już konto? <a href="/login">Zaloguj się</a></div>
+  </div>
+</div>
+<script>
+  async function doRegister(){
+    const btn=document.getElementById('regBtn');
+    btn.disabled=true;btn.textContent='Rejestracja...';
+    const res=await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:document.getElementById('username').value,email:document.getElementById('email').value,password:document.getElementById('password').value})
+    }).then(r=>r.json());
+    if(res.success){location.href='/';}
+    else{document.getElementById('alert').innerHTML=`<div class="alert alert-error">${res.errors.join('<br>')}</div>`;btn.disabled=false;btn.textContent='Zarejestruj się';}
+  }
+</script>
+</body>
+</html>

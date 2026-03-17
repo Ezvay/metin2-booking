@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moje rezerwacje — Patologiczne Expowisko</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .page-wrap{max-width:900px;margin:0 auto;padding:3rem 1.5rem;}
+    .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+    .page-title{font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:var(--text-bright);}
+    .page-title span{color:var(--gold-light);}
+    .booking-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem;position:relative;overflow:hidden;}
+    .booking-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4;}
+    .booking-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem;}
+    .booking-service{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--text-bright);}
+    .booking-meta{display:flex;gap:1.2rem;flex-wrap:wrap;color:var(--text-muted);font-size:.9rem;margin-bottom:.8rem;}
+    .party-members{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.6rem;}
+    .party-member{background:#0a0e1a;border:1px solid var(--border);border-radius:4px;padding:.2rem .6rem;font-size:.85rem;}
+    .party-member.me{border-color:var(--gold-dim);color:var(--gold-light);}
+  </style>
+</head>
+<body>
+<div class="chunjo-banner">
+  <span class="chunjo-flag"><svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg></span>
+  <strong style="color:var(--gold-light);letter-spacing:.2em">CHUNJO</strong> — Patologiczne Expowisko
+</div>
+<nav>
+  <a class="nav-logo" href="/">⚔️ Patologiczne <span>Expowisko</span></a>
+  <div class="nav-links">
+    <a href="/">Strona główna</a>
+    <a href="/calendar">Kalendarz</a>
+    <a href="/book">Rezerwuj</a>
+    <a href="/dashboard" class="active">Moje rezerwacje</a>
+    <a href="/admin" id="navAdmin" style="display:none">Admin</a>
+    <span id="navUser" style="color:var(--gold-light);font-family:'Cinzel',serif;font-size:.8rem"></span>
+    <form action="/logout" method="post" id="logoutForm"><button class="btn btn-outline btn-sm">Wyloguj</button></form>
+  </div>
+</nav>
+<main>
+<div class="page-wrap">
+  <div class="page-header">
+    <h1 class="page-title">Moje <span>Rezerwacje</span></h1>
+    <a href="/book" class="btn btn-gold btn-sm">+ Nowa rezerwacja</a>
+  </div>
+  <div id="content"><div class="spinner"></div></div>
+</div>
+</main>
+<footer><p>⚔️ <strong style="color:var(--gold-light)">Patologiczne Expowisko</strong> — Metin2 Leveling dla Chunjo</p></footer>
+<script>
+  const statusLabel={pending:'Oczekuje',active:'W toku',done:'Ukończone',rejected:'Odrzucone'};
+  const statusBadge={pending:'badge-pending',active:'badge-active',done:'badge-done',rejected:'badge-rejected'};
+  const partyIcons={1:'🗡️',2:'⚔️',3:'🔱'};
+  const partyNames={1:'Solo',2:'Duo',3:'Trio'};
+  let myUsername='';
+
+  fetch('/api/session').then(r=>r.json()).then(data=>{
+    if(!data.loggedIn){location.href='/login?redirect=/dashboard';return;}
+    myUsername=data.username;
+    document.getElementById('navUser').textContent='👤 '+data.username;
+    if(data.role==='admin') document.getElementById('navAdmin').style.display='';
+    loadBookings();
+  });
+
+  async function loadBookings(){
+    const members=await fetch('/api/my-bookings').then(r=>r.json());
+    const el=document.getElementById('content');
+    if(!members.length){
+      el.innerHTML=`<div style="text-align:center;padding:4rem 1rem;color:var(--text-muted)"><p style="font-size:2.5rem;margin-bottom:1rem">📭</p><p>Nie masz jeszcze żadnych rezerwacji.</p><a href="/book" class="btn btn-gold" style="margin-top:1.5rem">⚔️ Zarezerwuj expienie</a></div>`;
+      return;
+    }
+    el.innerHTML=members.map(m=>{
+      const partyMembersHtml = m.party_members.map(pm=>
+        `<div class="party-member ${pm.username===myUsername?'me':''}">${pm.username===myUsername?'👤':''} ${pm.char_name} (${pm.char_class})</div>`
+      ).join('');
+      return `
+      <div class="booking-card fade-up">
+        <div class="booking-header">
+          <div>
+            <div class="booking-service">${partyIcons[m.party_size]||'⚔️'} ${m.service_name} <span style="color:var(--text-muted);font-size:.85rem">(${partyNames[m.party_size]||''})</span></div>
+            <div style="color:var(--text-muted);font-size:.85rem;margin-top:.2rem">Złożono: ${new Date(m.joined_at).toLocaleDateString('pl-PL')}</div>
+          </div>
+          <span class="badge ${statusBadge[m.status]||'badge-pending'}">${statusLabel[m.status]||m.status}</span>
+        </div>
+        <div class="booking-meta">
+          <span>⚔️ ${m.char_name} (${m.char_class})</span>
+          <span>📈 Poz. ${m.char_level} → ${m.target_level}</span>
+          <span>📅 ${m.booked_date} o ${m.booked_time}</span>
+          <span>💰 ${m.price_sm?.toLocaleString()} SM/h</span>
+          ${m.contact_discord?`<span>💬 ${m.contact_discord}</span>`:''}
+        </div>
+        ${m.party_size > 1 ? `<div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.4rem">Party (${m.party_members.length}/${m.party_size}):</div><div class="party-members">${partyMembersHtml}</div>` : ''}
+        ${m.note?`<div style="margin-top:.8rem;padding:.6rem .8rem;background:#0a0e1a;border-radius:4px;color:var(--text-muted);font-size:.9rem">📝 ${m.note}</div>`:''}
+      </div>`;
+    }).join('');
+  }
+</script>
+</body>
+</html>

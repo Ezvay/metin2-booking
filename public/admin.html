@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admina — Patologiczne Expowisko</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .page-wrap{max-width:1100px;margin:0 auto;padding:3rem 1.5rem;}
+    .page-title{font-family:'Cinzel',serif;font-size:1.8rem;color:var(--text-bright);margin-bottom:2rem;}
+    .page-title span{color:var(--gold-light);}
+    .filter-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem;}
+    .filter-btn{padding:.35rem .9rem;border-radius:4px;font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);transition:all .15s;}
+    .filter-btn.active,.filter-btn:hover{border-color:var(--gold);color:var(--gold-light);}
+    .actions{display:flex;gap:.4rem;flex-wrap:wrap;}
+    .members-list{font-size:.8rem;color:var(--text-muted);}
+    .members-list div{padding:.1rem 0;}
+  </style>
+</head>
+<body>
+<div class="chunjo-banner">
+  <span class="chunjo-flag"><svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg></span>
+  <strong style="color:var(--gold-light);letter-spacing:.2em">CHUNJO</strong> — Patologiczne Expowisko
+</div>
+<nav>
+  <a class="nav-logo" href="/">⚔️ Patologiczne <span>Expowisko</span></a>
+  <div class="nav-links">
+    <a href="/">Strona główna</a>
+    <a href="/calendar">Kalendarz</a>
+    <a href="/dashboard">Moje rez.</a>
+    <a href="/admin" class="active">Admin</a>
+    <span id="navUser" style="color:var(--gold-light);font-family:'Cinzel',serif;font-size:.8rem"></span>
+    <form action="/logout" method="post"><button class="btn btn-outline btn-sm">Wyloguj</button></form>
+  </div>
+</nav>
+<main>
+<div class="page-wrap">
+  <h1 class="page-title">Panel <span>Administratora</span></h1>
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="filterStatus('all',this)">Wszystkie</button>
+    <button class="filter-btn" onclick="filterStatus('pending',this)">Oczekujące</button>
+    <button class="filter-btn" onclick="filterStatus('active',this)">W toku</button>
+    <button class="filter-btn" onclick="filterStatus('done',this)">Ukończone</button>
+    <button class="filter-btn" onclick="filterStatus('rejected',this)">Odrzucone</button>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Pakiet</th><th>Termin</th><th>Gracze</th><th>Status</th><th>Akcje</th></tr></thead>
+        <tbody id="tbody"><tr><td colspan="6"><div class="spinner"></div></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</main>
+<footer><p>⚔️ <strong style="color:var(--gold-light)">Patologiczne Expowisko</strong> — Panel Administratora</p></footer>
+<script>
+  let allBookings=[];
+  let currentFilter='all';
+  const statusLabel={pending:'Oczekuje',active:'W toku',done:'Ukończone',rejected:'Odrzucone'};
+  const statusBadge={pending:'badge-pending',active:'badge-active',done:'badge-done',rejected:'badge-rejected'};
+  const partyIcons={1:'🗡️',2:'⚔️',3:'🔱'};
+
+  fetch('/api/session').then(r=>r.json()).then(data=>{
+    if(!data.loggedIn||data.role!=='admin'){location.href='/';return;}
+    document.getElementById('navUser').textContent='👤 '+data.username;
+    loadBookings();
+  });
+
+  async function loadBookings(){
+    allBookings=await fetch('/api/admin/bookings').then(r=>r.json());
+    renderTable();
+  }
+
+  function renderTable(){
+    const filtered=currentFilter==='all'?allBookings:allBookings.filter(b=>b.status===currentFilter);
+    const tbody=document.getElementById('tbody');
+    if(!filtered.length){tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem">Brak rezerwacji.</td></tr>`;return;}
+    tbody.innerHTML=filtered.map(b=>{
+      const membersHtml = b.members.map(m=>
+        `<div>⚔️ <strong style="color:var(--text-bright)">${m.username}</strong> — ${m.char_name} (${m.char_class}, poz.${m.char_level}→${m.target_level})${m.contact_discord?` 💬 ${m.contact_discord}`:''}</div>`
+      ).join('') || '<div style="color:var(--text-muted);font-style:italic">Brak graczy</div>';
+
+      return `
+      <tr>
+        <td style="color:var(--text-muted)">#${b.id}</td>
+        <td>
+          <div style="color:var(--text-bright)">${partyIcons[b.party_size]||''} ${b.service_name}</div>
+          <div style="font-size:.8rem;color:var(--text-muted)">${b.members.length}/${b.party_size} graczy · ${b.price_sm?.toLocaleString()} SM/h</div>
+        </td>
+        <td>
+          <div>${b.booked_date}</div>
+          <div style="color:var(--text-muted);font-size:.85rem">${b.booked_time}</div>
+        </td>
+        <td><div class="members-list">${membersHtml}</div></td>
+        <td><span class="badge ${statusBadge[b.status]}">${statusLabel[b.status]}</span></td>
+        <td>
+          <div class="actions">
+            ${b.status==='pending'?`
+              <button class="btn btn-sm" style="background:#003020;color:#40d090;border:1px solid #006040" onclick="updateStatus(${b.id},'active')">Przyjmij</button>
+              <button class="btn btn-sm btn-danger" onclick="updateStatus(${b.id},'rejected')">Odrzuć</button>`:''}
+            ${b.status==='active'?`<button class="btn btn-sm" style="background:#001530;color:#4080f0;border:1px solid #003080" onclick="updateStatus(${b.id},'done')">Ukończ</button>`:''}
+            ${b.status==='done'||b.status==='rejected'?`<span style="color:var(--text-muted);font-size:.8rem">—</span>`:''}
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function filterStatus(status,btn){
+    currentFilter=status;
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTable();
+  }
+
+  async function updateStatus(id,status){
+    await fetch(`/api/admin/bookings/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});
+    loadBookings();
+  }
+</script>
+</body>
+</html>

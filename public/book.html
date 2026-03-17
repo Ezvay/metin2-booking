@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rezerwacja — Patologiczne Expowisko</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .book-wrap{max-width:680px;margin:0 auto;padding:3rem 1.5rem;}
+    .page-title{font-family:'Cinzel',serif;font-size:2rem;font-weight:900;color:var(--text-bright);margin-bottom:.3rem;}
+    .page-title span{color:var(--gold-light);}
+    .page-sub{color:var(--text-muted);margin-bottom:2rem;font-style:italic;}
+    .service-select-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;}
+    .service-opt{border:2px solid var(--border);border-radius:var(--radius);padding:1rem;cursor:pointer;transition:all .2s;background:var(--bg-card);}
+    .service-opt:hover{border-color:var(--gold-dim);}
+    .service-opt.selected{border-color:var(--gold);background:var(--gold-bg);}
+    .service-opt-label{font-family:'Cinzel',serif;font-size:.65rem;color:var(--gold);letter-spacing:.15em;text-transform:uppercase;}
+    .service-opt-name{font-family:'Cinzel',serif;font-size:1rem;color:var(--text-bright);margin:.3rem 0;}
+    .service-opt-price{color:var(--gold-light);font-size:.9rem;}
+    .success-box{text-align:center;padding:3rem;animation:fadeUp .5s ease;}
+    .success-title{font-family:'Cinzel',serif;font-size:1.8rem;color:var(--gold-light);margin-bottom:.8rem;}
+    .success-msg{color:var(--text-muted);margin-bottom:2rem;}
+    @media(max-width:600px){.service-select-grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="chunjo-banner">
+  <span class="chunjo-flag"><svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg></span>
+  <strong style="color:var(--gold-light);letter-spacing:.2em">CHUNJO</strong> — Patologiczne Expowisko
+</div>
+<nav>
+  <a class="nav-logo" href="/">⚔️ Patologiczne <span>Expowisko</span></a>
+  <div class="nav-links">
+    <a href="/">Strona główna</a>
+    <a href="/calendar">Kalendarz</a>
+    <a href="/book" class="active">Rezerwuj</a>
+    <a href="/dashboard" id="navDashboard" style="display:none">Moje rezerwacje</a>
+    <span id="navUser" style="color:var(--gold-light);font-family:'Cinzel',serif;font-size:.8rem;display:none"></span>
+    <form action="/logout" method="post" style="display:none" id="logoutForm"><button class="btn btn-outline btn-sm">Wyloguj</button></form>
+  </div>
+</nav>
+<main>
+<div class="book-wrap">
+  <div id="mainContent"><div class="spinner"></div></div>
+</div>
+</main>
+<footer><p>⚔️ <strong style="color:var(--gold-light)">Patologiczne Expowisko</strong> — Metin2 Leveling dla Chunjo</p></footer>
+<script>
+let services=[];
+let selectedService=null;
+const params=new URLSearchParams(location.search);
+const preselect=params.get('service');
+
+fetch('/api/session').then(r=>r.json()).then(data=>{
+  if(!data.loggedIn){location.href='/login?redirect=/book';return;}
+  document.getElementById('navUser').style.display='';
+  document.getElementById('navUser').textContent='👤 '+data.username;
+  document.getElementById('logoutForm').style.display='';
+  document.getElementById('navDashboard').style.display='';
+  loadForm();
+});
+
+async function loadForm(){
+  services=await fetch('/api/services').then(r=>r.json());
+  render();
+}
+
+function render(){
+  const icons=['🗡️','⚔️','🔱'];
+  const partyLabels=['Solo','Duo','Trio'];
+  document.getElementById('mainContent').innerHTML=`
+    <h1 class="page-title">Nowa <span>Rezerwacja</span></h1>
+    <p class="page-sub">Stwórz nowy termin. Chcesz dołączyć do istniejącego? <a href="/calendar" style="color:var(--gold)">Sprawdź kalendarz →</a></p>
+    <div id="alert"></div>
+    <div style="margin-bottom:1.5rem">
+      <div class="form-label" style="margin-bottom:.8rem">1. Wybierz pakiet</div>
+      <div class="service-select-grid">
+        ${services.map((s,i)=>`
+          <div class="service-opt ${preselect==s.id?'selected':''}" onclick="selectService(${s.id})" id="sopt_${s.id}">
+            <div class="service-opt-label">Poz. ${s.level_from}–${s.level_to}</div>
+            <div class="service-opt-name">${icons[i]||'⚔️'} ${s.name}</div>
+            <div class="service-opt-price">${s.price_sm.toLocaleString()} SM/h</div>
+            <div style="font-size:.75rem;color:var(--text-muted);margin-top:.3rem">maks. ${s.party_size} ${s.party_size===1?'osoba':'osoby'}</div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:1.5rem">
+      <div class="form-label" style="margin-bottom:1rem">2. Twoja postać</div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Nazwa postaci *</label><input type="text" id="charName" class="form-control" placeholder="NazwaPostaci"></div>
+        <div class="form-group"><label class="form-label">Klasa *</label>
+          <select id="charClass" class="form-control">
+            <option value="">— wybierz —</option>
+            <option>Wojownik</option><option>Ninja</option><option>Sura</option>
+            <option>Szaman</option><option>Smoczarz</option><option>Rycerz</option><option>Lupus</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Aktualny poziom *</label><input type="number" id="charLevel" class="form-control" min="45" max="75" placeholder="np. 50"></div>
+        <div class="form-group"><label class="form-label">Docelowy poziom *</label><input type="number" id="targetLevel" class="form-control" min="45" max="75" placeholder="np. 70"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Nick Discord (opcjonalne)</label><input type="text" id="discord" class="form-control" placeholder="NazwaDiscord#0000"></div>
+    </div>
+    <div class="card" style="margin-bottom:1.5rem">
+      <div class="form-label" style="margin-bottom:1rem">3. Termin</div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Data *</label><input type="date" id="bookedDate" class="form-control" min="${new Date().toISOString().split('T')[0]}"></div>
+        <div class="form-group"><label class="form-label">Godzina *</label><input type="time" id="bookedTime" class="form-control"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Uwagi (opcjonalne)</label><textarea id="note" class="form-control" rows="3" placeholder="Dodatkowe informacje..."></textarea></div>
+    </div>
+    <button class="btn btn-gold" style="width:100%;padding:.9rem" onclick="submitBooking()">⚔️ Utwórz rezerwację</button>
+  `;
+  if(preselect) selectedService=parseInt(preselect);
+}
+
+function selectService(id){
+  selectedService=id;
+  document.querySelectorAll('.service-opt').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('sopt_'+id).classList.add('selected');
+}
+
+async function submitBooking(){
+  const alertEl=document.getElementById('alert');
+  if(!selectedService){alertEl.innerHTML='<div class="alert alert-error">Wybierz pakiet.</div>';return;}
+  const charName=document.getElementById('charName').value.trim();
+  const charClass=document.getElementById('charClass').value;
+  const charLevel=document.getElementById('charLevel').value;
+  const targetLevel=document.getElementById('targetLevel').value;
+  const bookedDate=document.getElementById('bookedDate').value;
+  const bookedTime=document.getElementById('bookedTime').value;
+  if(!charName||!charClass||!charLevel||!targetLevel||!bookedDate||!bookedTime){
+    alertEl.innerHTML='<div class="alert alert-error">Wypełnij wszystkie wymagane pola (*).</div>';return;
+  }
+  const res=await fetch('/api/bookings',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({service_id:selectedService,char_name:charName,char_class:charClass,char_level:charLevel,target_level:targetLevel,contact_discord:document.getElementById('discord').value,note:document.getElementById('note').value,booked_date:bookedDate,booked_time:bookedTime})
+  }).then(r=>r.json());
+  if(res.success){
+    document.getElementById('mainContent').innerHTML=`
+      <div class="success-box">
+        <div style="font-size:4rem;margin-bottom:1rem">🎉</div>
+        <div class="success-title">Rezerwacja złożona!</div>
+        <div class="success-msg">Twoja rezerwacja jest widoczna w kalendarzu. Inni gracze mogą dołączyć do Twojego party! Skontaktujemy się przez Discord.</div>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+          <a href="/calendar" class="btn btn-gold">📅 Zobacz kalendarz</a>
+          <a href="/dashboard" class="btn btn-outline">Moje rezerwacje</a>
+        </div>
+      </div>`;
+  } else {
+    alertEl.innerHTML=`<div class="alert alert-error">${res.error}</div>`;
+  }
+}
+</script>
+</body>
+</html>
