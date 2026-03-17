@@ -10,6 +10,10 @@ const PORT = process.env.PORT || 3000;
 const dataDir = path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir);
 
+// Discord interactions need raw body for signature verification
+app.use('/api/discord/interactions', express.raw({ type: 'application/json' }));
+
+// Everything else uses JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -28,7 +32,13 @@ app.use('/', require('./routes/api'));
 const pages = ['/', '/dashboard', '/admin', '/book', '/calendar'];
 pages.forEach(p => {
   app.get(p, (req, res) => {
-    const map = { '/': 'index.html', '/dashboard': 'dashboard.html', '/admin': 'admin.html', '/book': 'book.html', '/calendar': 'calendar.html' };
+    const map = {
+      '/': 'index.html',
+      '/dashboard': 'dashboard.html',
+      '/admin': 'admin.html',
+      '/book': 'book.html',
+      '/calendar': 'calendar.html'
+    };
     res.sendFile(map[p], { root: './public' });
   });
 });
