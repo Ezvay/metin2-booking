@@ -3,9 +3,7 @@ const router = express.Router();
 const db = require('../db/database');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { sendBookingNotification, handleInteraction } = require('../discord');
-const crypto = require('crypto');
 
-// GET /api/session
 router.get('/api/session', (req, res) => {
   if (req.session.userId) {
     res.json({ loggedIn: true, username: req.session.username, role: req.session.role, userId: req.session.userId });
@@ -14,13 +12,11 @@ router.get('/api/session', (req, res) => {
   }
 });
 
-// GET /api/services
 router.get('/api/services', async (req, res) => {
   const services = await db.all2('SELECT * FROM services WHERE available=1');
   res.json(services);
 });
 
-// GET /api/calendar
 router.get('/api/calendar', async (req, res) => {
   const bookings = await db.all2(`
     SELECT b.id, b.booked_date, b.booked_time, b.status, b.note,
@@ -42,7 +38,6 @@ router.get('/api/calendar', async (req, res) => {
   res.json(bookings);
 });
 
-// POST /api/bookings
 router.post('/api/bookings', requireAuth, async (req, res) => {
   const { service_id, char_name, char_class, char_level, target_level, contact_discord, note, booked_date, booked_time } = req.body;
   if (!service_id || !char_name || !char_class || !char_level || !target_level || !booked_date || !booked_time) {
@@ -67,7 +62,6 @@ router.post('/api/bookings', requireAuth, async (req, res) => {
     [result.lastID, req.session.userId, char_name, char_class, char_level, target_level, contact_discord || '']
   );
 
-  // Discord notification
   sendBookingNotification({
     type: 'new_booking',
     bookingId: result.lastID,
@@ -87,14 +81,13 @@ router.post('/api/bookings', requireAuth, async (req, res) => {
   res.json({ success: true });
 });
 
-// POST /api/bookings/:id/join
 router.post('/api/bookings/:id/join', requireAuth, async (req, res) => {
   const { char_name, char_class, char_level, target_level, contact_discord } = req.body;
   if (!char_name || !char_class || !char_level || !target_level) {
     return res.json({ success: false, error: 'Wypełnij wszystkie wymagane pola.' });
   }
   const booking = await db.get2(`
-    SELECT b.*, s.party_size, s.name as service_name, s.price_sm FROM bookings b
+    SELECT b.*, s.party_size, s.name as service_name FROM bookings b
     JOIN services s ON b.service_id = s.id
     WHERE b.id = ? AND b.status != 'rejected'
   `, [req.params.id]);
@@ -118,7 +111,6 @@ router.post('/api/bookings/:id/join', requireAuth, async (req, res) => {
     [req.params.id, req.session.userId, char_name, char_class, char_level, target_level, contact_discord || '']
   );
 
-  // Discord notification
   sendBookingNotification({
     type: 'joined_party',
     bookingId: booking.id,
@@ -137,7 +129,6 @@ router.post('/api/bookings/:id/join', requireAuth, async (req, res) => {
   res.json({ success: true });
 });
 
-// GET /api/my-bookings
 router.get('/api/my-bookings', requireAuth, async (req, res) => {
   const members = await db.all2(`
     SELECT pm.*, b.booked_date, b.booked_time, b.status, b.id as booking_id, b.note,
@@ -158,7 +149,6 @@ router.get('/api/my-bookings', requireAuth, async (req, res) => {
   res.json(members);
 });
 
-// GET /api/admin/bookings
 router.get('/api/admin/bookings', requireAdmin, async (req, res) => {
   const bookings = await db.all2(`
     SELECT b.*, s.name as service_name, s.party_size, s.price_sm
@@ -174,16 +164,37 @@ router.get('/api/admin/bookings', requireAdmin, async (req, res) => {
   res.json(bookings);
 });
 
-// PATCH /api/admin/bookings/:id
 router.patch('/api/admin/bookings/:id', requireAdmin, async (req, res) => {
   await db.run2('UPDATE bookings SET status=? WHERE id=?', [req.body.status, req.params.id]);
   res.json({ success: true });
 });
 
-// POST /api/discord/interactions — Discord button clicks
-router.post('/api/discord/interactions', express.json(), async (req, res) => {
-  const signature = req.headers['x-signature-ed25519'];
-  const timestamp = req.headers['x-signature-timestamp'];
+router.post('/api/discord/interactions', async (req, res) => {
+  try {
+    const signature = req.headers['x-signature-ed25519'];
+    const timestamp = req.headers['x-signature-timestamp'];
+    const publicKey = process.env.DISCORD_PUBLIC_KEY;
 
-  // Verify Discord signature
-  const PUBLIC
+    if (publicKey && signature && timestamp) {
+      const nacl = require('tweetnacl');
+      const bodyStr = JSON.stringify(req.body);
+      const isValid = nacl.sign.detached.verify(
+        Buffer.from(timestamp + bodyStr),
+        Buffer.from(signature, 'hex'),
+        Buffer.from(publicKey, 'hex')
+      );
+      if (!isValid) return res.status(401).json({ error: 'Invalid signature' });
+    }
+
+    const interaction = req.body;
+    if (interaction.type === 1) return res.json({ type: 1 });
+
+    const response = await handleInteraction(interaction, db);
+    res.json(response);
+  } catch (err) {
+    console.error('Interaction error:', err);
+    res.status(500).json({ error: 'Internal error' });
+  }
+});
+
+module.exports = router;
