@@ -1,7 +1,7 @@
 {
   "name": "patologiczne-expowisko",
   "version": "1.0.0",
-  "description": "System rezerwacji expienia - Patologiczne Expowisko Metin2",
+  "description": "System rezerwacji expienia",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -19,27 +19,3 @@
     "node": ">=18.0.0"
   }
 }
-```
-
----
-
-## ⚙️ Dodaj zmienne na Render.com
-
-W **Environment Variables** na Render dodaj:
-
-| Key | Value |
-|-----|-------|
-| `DISCORD_TOKEN` | `MTQ4MzUxNDYzMjkwMjY3NjYwMg.GevGGq.bz9H4CJADEhbhJ5koU56o2G2yVnSrq8Q5H4paQ` |
-| `DISCORD_CHANNEL_ID` | `1483513674621649078` |
-| `DISCORD_PUBLIC_KEY` | *(za chwilę wyjaśnię jak zdobyć)* |
-
----
-
-## 🔑 Ostatni krok — Public Key i Interaction URL
-
-1. Wejdź na **discord.com/developers/applications** → Twój bot
-2. Na stronie głównej aplikacji znajdź **"Public Key"** → skopiuj
-3. Dodaj jako `DISCORD_PUBLIC_KEY` na Render
-4. W zakładce **"General Information"** znajdź **"Interactions Endpoint URL"** i wpisz:
-```
-   https://metin2-booking.onrender.com/api/discord/interactions
