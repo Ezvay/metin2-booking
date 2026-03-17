@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rejestracja — Patologiczne Expowisko</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -23,7 +22,7 @@
   </div>
 </div>
 <script>
-  async function doRegister(){
+  async function doRegister() {
     const btn=document.getElementById('regBtn');
     btn.disabled=true;btn.textContent='Rejestracja...';
     const res=await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},

@@ -7,18 +7,11 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-
 <div class="chunjo-banner">
-  <span class="chunjo-flag">
-    <svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800" opacity="0.95"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg>
-  </span>
-  Oferta wyłącznie dla graczy królestwa
-  <strong style="color:var(--gold-light);letter-spacing:.25em">CHUNJO</strong>
-  <span class="chunjo-flag">
-    <svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800" opacity="0.95"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg>
-  </span>
+  <span class="chunjo-flag"><svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg></span>
+  Oferta wyłącznie dla graczy królestwa <strong style="color:var(--gold-light);letter-spacing:.25em">CHUNJO</strong>
+  <span class="chunjo-flag"><svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg></span>
 </div>
-
 <nav>
   <a class="nav-logo" href="/">⚔️ Patologiczne <span>Expowisko</span></a>
   <div class="nav-links">
@@ -27,15 +20,12 @@
     <a href="/book">Rezerwuj</a>
     <a href="/dashboard" id="navDashboard" style="display:none">Moje rezerwacje</a>
     <a href="/admin" id="navAdmin" style="display:none">Admin</a>
-    <span id="navUser" style="color:var(--gold-light);font-family:'Cinzel',serif;font-size:0.8rem;display:none"></span>
-    <form action="/logout" method="post" style="display:none" id="logoutForm">
-      <button class="btn btn-outline btn-sm">Wyloguj</button>
-    </form>
+    <span id="navUser" style="color:var(--gold-light);font-family:'Cinzel',serif;font-size:.8rem;display:none"></span>
+    <form action="/logout" method="post" style="display:none" id="logoutForm"><button class="btn btn-outline btn-sm">Wyloguj</button></form>
     <a href="/login" class="btn btn-outline btn-sm" id="navLogin">Zaloguj</a>
     <a href="/register" class="btn btn-gold btn-sm" id="navRegister">Zarejestruj</a>
   </div>
 </nav>
-
 <main>
   <section class="hero container">
     <p class="hero-eyebrow">
@@ -52,7 +42,7 @@
     <div class="stats-bar">
       <div class="stat"><div class="stat-value">3</div><div class="stat-label">Pakiety</div></div>
       <div class="stat"><div class="stat-value">45–75</div><div class="stat-label">Poziomy</div></div>
-      <div class="stat"><div class="stat-value">1500+</div><div class="stat-label">SM/h od osoby</div></div>
+      <div class="stat"><div class="stat-value" id="avgRating">⭐</div><div class="stat-label">Średnia ocena</div></div>
       <div class="stat"><div class="stat-value">Chunjo</div><div class="stat-label">Królestwo</div></div>
     </div>
   </section>
@@ -60,8 +50,16 @@
   <section class="section" id="services">
     <div class="container">
       <h2 class="section-title">Dostępne <span>Pakiety</span></h2>
-      <p class="section-sub">Poziomy 45–75 · Płatność w Smoczych Monetach · Solo, Duo lub Trio</p>
+      <p class="section-sub">Poziomy 45–75 · Płatność w Smoczych Monetach</p>
       <div class="grid-3" id="servicesList"><div class="spinner"></div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Opinie <span>Graczy</span></h2>
+      <p class="section-sub">Co mówią gracze którzy korzystali z naszych usług</p>
+      <div id="reviewsList"><div class="spinner"></div></div>
     </div>
   </section>
 
@@ -72,43 +70,43 @@
       <div class="grid-2">
         <div class="card fade-up" style="animation-delay:.1s"><div class="how-step"><div class="step-num">01</div><div><div class="step-title">Zarejestruj konto</div><div class="step-desc">Stwórz darmowe konto na stronie.</div></div></div></div>
         <div class="card fade-up" style="animation-delay:.2s"><div class="how-step"><div class="step-num">02</div><div><div class="step-title">Sprawdź kalendarz</div><div class="step-desc">Zobacz dostępne terminy i otwarte party.</div></div></div></div>
-        <div class="card fade-up" style="animation-delay:.3s"><div class="how-step"><div class="step-num">03</div><div><div class="step-title">Zarezerwuj lub dołącz</div><div class="step-desc">Stwórz nową rezerwację lub dołącz do istniejącego Duo/Trio.</div></div></div></div>
-        <div class="card fade-up" style="animation-delay:.4s"><div class="how-step"><div class="step-num">04</div><div><div class="step-title">Czekaj na Discord</div><div class="step-desc">Potwierdzimy termin i skontaktujemy się z Tobą.</div></div></div></div>
+        <div class="card fade-up" style="animation-delay:.3s"><div class="how-step"><div class="step-num">03</div><div><div class="step-title">Zarezerwuj lub dołącz</div><div class="step-desc">Stwórz nową rezerwację lub dołącz do Duo/Trio.</div></div></div></div>
+        <div class="card fade-up" style="animation-delay:.4s"><div class="how-step"><div class="step-num">04</div><div><div class="step-title">Śledź status</div><div class="step-desc">Link do statusu rezerwacji — bez logowania!</div></div></div></div>
       </div>
     </div>
   </section>
 </main>
-
-<footer>
-  <p>⚔️ <strong style="color:var(--gold-light)">Patologiczne Expowisko</strong> — Metin2 Leveling dla Chunjo &nbsp;·&nbsp; Nie jesteśmy oficjalną stroną serwera Projekt Hard.</p>
-</footer>
-
+<footer><p>⚔️ <strong style="color:var(--gold-light)">Patologiczne Expowisko</strong> — Metin2 Leveling dla Chunjo · Nie jesteśmy oficjalną stroną serwera Projekt Hard.</p></footer>
+<script src="/js/nav.js"></script>
 <script>
-  fetch('/api/session').then(r=>r.json()).then(d=>{
-    if(d.loggedIn){
-      document.getElementById('navLogin').style.display='none';
-      document.getElementById('navRegister').style.display='none';
-      document.getElementById('navUser').style.display='';
-      document.getElementById('navUser').textContent='👤 '+d.username;
-      document.getElementById('logoutForm').style.display='';
-      document.getElementById('navDashboard').style.display='';
-      if(d.role==='admin') document.getElementById('navAdmin').style.display='';
-    }
-  });
+  initNav('/');
+  const icons = ['🗡️','⚔️','🔱'];
+  const pLabels = ['Solo','Duo','Trio'];
 
-  const icons=['🗡️','⚔️','🔱'];
-  const partyLabels=['Solo','Duo','Trio'];
   fetch('/api/services').then(r=>r.json()).then(services=>{
-    document.getElementById('servicesList').innerHTML=services.map((s,i)=>`
+    document.getElementById('servicesList').innerHTML = services.map((s,i)=>`
       <div class="service-card" onclick="location.href='/book?service=${s.id}'">
-        <div class="service-levels">Poziom ${s.level_from}–${s.level_to} · ${partyLabels[i]||''}</div>
+        <div class="service-levels">Poziom ${s.level_from}–${s.level_to} · ${pLabels[i]||''}</div>
         <div class="service-name">${icons[i]||'⚔️'} ${s.name}</div>
         <div class="service-desc">${s.description}</div>
         <div class="service-meta">
           <div class="service-price">${s.price_sm.toLocaleString()} <small>SM/h od osoby</small></div>
-          <span class="badge badge-${partyLabels[i]?.toLowerCase()||'solo'}">${s.party_size} os.</span>
+          <span style="color:var(--text-muted);font-size:.85rem">maks. ${s.party_size} os.</span>
         </div>
       </div>`).join('');
+  });
+
+  fetch('/api/reviews').then(r=>r.json()).then(reviews=>{
+    const el = document.getElementById('reviewsList');
+    if (!reviews.length) { el.innerHTML = '<p style="text-align:center;color:var(--text-muted);font-style:italic">Brak opinii. Bądź pierwszy!</p>'; return; }
+    el.innerHTML = `<div class="grid-2">${reviews.slice(0,4).map(r=>`
+      <div class="review-card">
+        <div class="review-rating">${'⭐'.repeat(r.rating)}</div>
+        <div class="review-comment">"${r.comment || 'Brak komentarza'}"</div>
+        <div class="review-meta">— ${r.username} · ${r.service_name}</div>
+      </div>`).join('')}</div>`;
+    const avg = reviews.reduce((a,r)=>a+r.rating,0)/reviews.length;
+    document.getElementById('avgRating').textContent = avg.toFixed(1) + ' ⭐';
   });
 </script>
 </body>

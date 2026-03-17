@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Logowanie — Patologiczne Expowisko</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -22,13 +21,12 @@
   </div>
 </div>
 <script>
-  const params=new URLSearchParams(location.search);
-  const redirect=params.get('redirect')||'/';
-  document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
-  async function doLogin(){
-    const btn=document.getElementById('loginBtn');
-    btn.disabled=true;btn.textContent='Logowanie...';
-    const res=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},
+  const redirect = new URLSearchParams(location.search).get('redirect') || '/';
+  document.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+  async function doLogin() {
+    const btn = document.getElementById('loginBtn');
+    btn.disabled=true; btn.textContent='Logowanie...';
+    const res = await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({username:document.getElementById('username').value,password:document.getElementById('password').value,redirect})
     }).then(r=>r.json());
     if(res.success){location.href=res.redirect;}

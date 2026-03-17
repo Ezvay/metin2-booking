@@ -10,15 +10,15 @@ router.get('/register', (req, res) => {
 });
 
 router.post('/register', [
-  body('username').trim().isLength({ min: 3, max: 20 }).withMessage('Nazwa musi mieć 3–20 znaków.'),
-  body('email').isEmail().withMessage('Podaj prawidłowy email.'),
-  body('password').isLength({ min: 6 }).withMessage('Hasło musi mieć min. 6 znaków.'),
+  body('username').trim().isLength({ min: 3, max: 20 }).withMessage('Nazwa musi miec 3-20 znakow.'),
+  body('email').isEmail().withMessage('Podaj prawidlowy email.'),
+  body('password').isLength({ min: 6 }).withMessage('Haslo musi miec min. 6 znakow.'),
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.json({ success: false, errors: errors.array().map(e => e.msg) });
   const { username, email, password } = req.body;
   const existing = await db.get2('SELECT id FROM users WHERE username=? OR email=?', [username, email]);
-  if (existing) return res.json({ success: false, errors: ['Nazwa lub email już istnieje.'] });
+  if (existing) return res.json({ success: false, errors: ['Nazwa lub email juz istnieje.'] });
   const hash = await bcrypt.hash(password, 10);
   const result = await db.run2('INSERT INTO users (username, email, password) VALUES (?,?,?)', [username, email, hash]);
   req.session.userId = result.lastID;
@@ -35,9 +35,9 @@ router.get('/login', (req, res) => {
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   const user = await db.get2('SELECT * FROM users WHERE username=?', [username]);
-  if (!user) return res.json({ success: false, errors: ['Nieprawidłowa nazwa lub hasło.'] });
+  if (!user) return res.json({ success: false, errors: ['Nieprawidlowa nazwa lub haslo.'] });
   const match = await bcrypt.compare(password, user.password);
-  if (!match) return res.json({ success: false, errors: ['Nieprawidłowa nazwa lub hasło.'] });
+  if (!match) return res.json({ success: false, errors: ['Nieprawidlowa nazwa lub haslo.'] });
   req.session.userId = user.id;
   req.session.username = user.username;
   req.session.role = user.role;

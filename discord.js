@@ -29,16 +29,17 @@ function apiRequest(method, path, body) {
 
 async function sendBookingNotification(opts) {
   if (!TOKEN || !CHANNEL_ID) return;
-  const partyIcons = { 1: 'Solo', 2: 'Duo', 3: 'Trio' };
+  const partyNames = { 1: 'Solo', 2: 'Duo', 3: 'Trio' };
   const typeLabels = {
-    new_booking: 'Nowa rezerwacja!',
-    joined_party: 'Ktos dolaczyl do party!',
-    cancelled: 'Rezerwacja anulowana'
+    new_booking: 'NOWA REZERWACJA',
+    joined_party: 'DOLACZYL DO PARTY',
+    cancelled: 'ANULOWANO REZERWACJE',
+    status_change: 'ZMIANA STATUSU'
   };
-  const colors = { new_booking: 0xf5c800, joined_party: 0x40d090, cancelled: 0xff4444 };
+  const colors = { new_booking: 0xf5c800, joined_party: 0x40d090, cancelled: 0xff4444, status_change: 0x4080ff };
 
   const fields = [
-    { name: 'Pakiet', value: opts.serviceName + ' (' + (partyIcons[opts.partySize] || '') + ')', inline: true },
+    { name: 'Pakiet', value: opts.serviceName + ' (' + (partyNames[opts.partySize] || '') + ')', inline: true },
     { name: 'Termin', value: opts.date + ' o ' + opts.time, inline: true },
     { name: 'Gracz', value: opts.username, inline: true },
     { name: 'Postac', value: opts.charName + ' (' + opts.charClass + ')', inline: true },
@@ -46,8 +47,10 @@ async function sendBookingNotification(opts) {
   ];
   if (opts.discord) fields.push({ name: 'Discord', value: opts.discord, inline: true });
   if (opts.note) fields.push({ name: 'Uwagi', value: opts.note });
+  if (opts.statusLabel) fields.push({ name: 'Nowy status', value: opts.statusLabel, inline: true });
 
-  const components = (opts.type === 'new_booking' || opts.type === 'joined_party') ? [{
+  const showButtons = opts.type === 'new_booking' || opts.type === 'joined_party';
+  const components = showButtons ? [{
     type: 1,
     components: [
       { type: 2, style: 3, label: 'Przyjmij', custom_id: 'accept_' + opts.bookingId },
@@ -57,7 +60,7 @@ async function sendBookingNotification(opts) {
 
   await apiRequest('POST', '/channels/' + CHANNEL_ID + '/messages', {
     embeds: [{
-      title: typeLabels[opts.type] || 'Powiadomienie',
+      title: typeLabels[opts.type] || 'POWIADOMIENIE',
       color: colors[opts.type] || 0xf5c800,
       fields: fields,
       footer: { text: 'ID rezerwacji: #' + opts.bookingId },
@@ -68,8 +71,6 @@ async function sendBookingNotification(opts) {
 }
 
 async function handleInteraction(interaction, db) {
-  console.log('handleInteraction type:', interaction.type, 'custom_id:', interaction.data && interaction.data.custom_id);
-
   const custom_id = interaction.data && interaction.data.custom_id;
   if (!custom_id) return { type: 1 };
 
@@ -86,8 +87,6 @@ async function handleInteraction(interaction, db) {
                   (interaction.member && interaction.member.user && interaction.member.user.username) ||
                   (interaction.user && interaction.user.username) ||
                   'Nieznany';
-
-  console.log('Booking #' + bookingId + ' -> ' + newStatus + ' by ' + clicker);
 
   await db.run2('UPDATE bookings SET status=? WHERE id=?', [newStatus, bookingId]);
 

@@ -33,7 +33,6 @@ async function init() {
     available INTEGER DEFAULT 1
   )`);
 
-  // bookings = "sessions" — one booking = one time slot for a party
   await db.run2(`CREATE TABLE IF NOT EXISTS bookings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     service_id INTEGER NOT NULL,
@@ -41,11 +40,11 @@ async function init() {
     booked_time TEXT NOT NULL,
     status TEXT DEFAULT 'pending',
     note TEXT,
+    status_token TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(service_id) REFERENCES services(id)
   )`);
 
-  // party_members = people who joined a booking slot
   await db.run2(`CREATE TABLE IF NOT EXISTS party_members (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     booking_id INTEGER NOT NULL,
@@ -60,14 +59,45 @@ async function init() {
     FOREIGN KEY(user_id) REFERENCES users(id)
   )`);
 
+  await db.run2(`CREATE TABLE IF NOT EXISTS reviews (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    booking_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    rating INTEGER NOT NULL,
+    comment TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(booking_id) REFERENCES bookings(id),
+    FOREIGN KEY(user_id) REFERENCES users(id)
+  )`);
+
+  await db.run2(`CREATE TABLE IF NOT EXISTS coupons (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT UNIQUE NOT NULL,
+    discount_percent INTEGER NOT NULL,
+    max_uses INTEGER DEFAULT 1,
+    uses INTEGER DEFAULT 0,
+    expires_at TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
+  await db.run2(`CREATE TABLE IF NOT EXISTS chat_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    booking_id INTEGER NOT NULL,
+    user_id INTEGER,
+    is_admin INTEGER DEFAULT 0,
+    message TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(booking_id) REFERENCES bookings(id)
+  )`);
+
   const count = await db.get2('SELECT COUNT(*) as c FROM services');
   if (count.c === 0) {
     await db.run2(`INSERT INTO services (name, description, party_size, level_from, level_to, price_sm) VALUES (?,?,?,?,?,?)`,
-      ['Expienie Solo', 'Expienie sam na sam. Maksymalnie 1 osoba.', 1, 45, 75, 5000]);
+      ['Expienie Solo', 'Expienie sam na sam. Maksymalnie 1 osoba. 5000 SM/h.', 1, 45, 75, 5000]);
     await db.run2(`INSERT INTO services (name, description, party_size, level_from, level_to, price_sm) VALUES (?,?,?,?,?,?)`,
-      ['Expienie Duo', 'Expienie w parze. Maksymalnie 2 osoby. Cena 2000 SM/h od osoby.', 2, 45, 75, 2000]);
+      ['Expienie Duo', 'Expienie w parze. Maksymalnie 2 osoby. 2000 SM/h od osoby.', 2, 45, 75, 2000]);
     await db.run2(`INSERT INTO services (name, description, party_size, level_from, level_to, price_sm) VALUES (?,?,?,?,?,?)`,
-      ['Expienie Trio', 'Expienie w trójce. Maksymalnie 3 osoby. Cena 1500 SM/h od osoby.', 3, 45, 75, 1500]);
+      ['Expienie Trio', 'Expienie w trójce. Maksymalnie 3 osoby. 1500 SM/h od osoby.', 3, 45, 75, 1500]);
   }
 
   const adminCount = await db.get2("SELECT COUNT(*) as c FROM users WHERE role='admin'");

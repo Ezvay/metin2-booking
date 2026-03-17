@@ -1,36 +1,23 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kalendarz — Patologiczne Expowisko</title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
-    .page-wrap{max-width:900px;margin:0 auto;padding:3rem 1.5rem;}
-    .page-title{font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:var(--text-bright);margin-bottom:.3rem;}
-    .page-title span{color:var(--gold-light);}
-    .page-sub{color:var(--text-muted);margin-bottom:2rem;font-style:italic;}
     .day-group{margin-bottom:2rem;}
     .day-label{font-family:'Cinzel',serif;font-size:.85rem;color:var(--gold);letter-spacing:.15em;text-transform:uppercase;margin-bottom:.8rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);}
-    .empty-state{text-align:center;padding:4rem 1rem;color:var(--text-muted);}
-    .filter-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem;}
-    .filter-btn{padding:.35rem .9rem;border-radius:4px;font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text-muted);transition:all .15s;}
-    .filter-btn.active,.filter-btn:hover{border-color:var(--gold);color:var(--gold-light);}
   </style>
 </head>
 <body>
-
 <div class="chunjo-banner">
   <span class="chunjo-flag"><svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg></span>
   <strong style="color:var(--gold-light);letter-spacing:.2em">CHUNJO</strong> — Patologiczne Expowisko
 </div>
-
 <nav>
   <a class="nav-logo" href="/">⚔️ Patologiczne <span>Expowisko</span></a>
   <div class="nav-links">
-    <a href="/">Strona główna</a>
-    <a href="/calendar" class="active">Kalendarz</a>
-    <a href="/book">Rezerwuj</a>
+    <a href="/">Strona główna</a><a href="/calendar" class="active">Kalendarz</a><a href="/book">Rezerwuj</a>
     <a href="/dashboard" id="navDashboard" style="display:none">Moje rezerwacje</a>
     <a href="/admin" id="navAdmin" style="display:none">Admin</a>
     <span id="navUser" style="color:var(--gold-light);font-family:'Cinzel',serif;font-size:.8rem;display:none"></span>
@@ -39,20 +26,20 @@
     <a href="/register" class="btn btn-gold btn-sm" id="navRegister">Zarejestruj</a>
   </div>
 </nav>
-
 <main>
 <div class="page-wrap">
-  <h1 class="page-title">Kalendarz <span>Rezerwacji</span></h1>
-  <p class="page-sub">Przeglądaj terminy, sprawdź dostępne miejsca i dołącz do istniejącego party.</p>
-
+  <div class="page-header">
+    <h1 class="page-title">Kalendarz <span>Rezerwacji</span></h1>
+    <a href="/book" class="btn btn-gold btn-sm">+ Nowa rezerwacja</a>
+  </div>
+  <p style="color:var(--text-muted);font-style:italic;margin-bottom:1.5rem">Przeglądaj terminy i dołącz do otwartych party Duo/Trio.</p>
   <div class="filter-bar">
     <button class="filter-btn active" onclick="filterType('all',this)">Wszystkie</button>
-    <button class="filter-btn" onclick="filterType('solo',this)">🗡️ Solo</button>
-    <button class="filter-btn" onclick="filterType('duo',this)">⚔️ Duo</button>
-    <button class="filter-btn" onclick="filterType('trio',this)">🔱 Trio</button>
+    <button class="filter-btn" onclick="filterType('1',this)">🗡️ Solo</button>
+    <button class="filter-btn" onclick="filterType('2',this)">⚔️ Duo</button>
+    <button class="filter-btn" onclick="filterType('3',this)">🔱 Trio</button>
     <button class="filter-btn" onclick="filterType('open',this)">🟢 Wolne miejsca</button>
   </div>
-
   <div id="calContent"><div class="spinner"></div></div>
 </div>
 </main>
@@ -81,162 +68,107 @@
   </div>
 </div>
 
-<footer><p>⚔️ <strong style="color:var(--gold-light)">Patologiczne Expowisko</strong> — Metin2 Leveling dla Chunjo</p></footer>
-
+<footer><p>⚔️ <strong style="color:var(--gold-light)">Patologiczne Expowisko</strong></p></footer>
+<script src="/js/nav.js"></script>
 <script>
-let bookings = [];
-let currentFilter = 'all';
-let currentUser = null;
-let joinBookingId = null;
+let bookings=[], currentFilter='all', currentUser=null, joinBookingId=null;
 
-const partyIcons = { 1:'🗡️', 2:'⚔️', 3:'🔱' };
-const partyNames = { 1:'Solo', 2:'Duo', 3:'Trio' };
-const statusLabel = { pending:'Oczekuje', active:'W toku', done:'Ukończone', rejected:'Odrzucone' };
-const statusBadge = { pending:'badge-pending', active:'badge-active', done:'badge-done' };
+initNav('/calendar').then(d => { currentUser=d; loadCalendar(); });
 
-fetch('/api/session').then(r=>r.json()).then(d=>{
-  currentUser = d;
-  if(d.loggedIn){
-    document.getElementById('navLogin').style.display='none';
-    document.getElementById('navRegister').style.display='none';
-    document.getElementById('navUser').style.display='';
-    document.getElementById('navUser').textContent='👤 '+d.username;
-    document.getElementById('logoutForm').style.display='';
-    document.getElementById('navDashboard').style.display='';
-    if(d.role==='admin') document.getElementById('navAdmin').style.display='';
-  }
-  loadCalendar();
-});
-
-async function loadCalendar() {
+async function loadCalendar(){
   bookings = await fetch('/api/calendar').then(r=>r.json());
   renderCalendar();
 }
 
-function filterType(type, btn) {
-  currentFilter = type;
+function filterType(type, btn){
+  currentFilter=type;
   document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   renderCalendar();
 }
 
-function renderCalendar() {
-  const el = document.getElementById('calContent');
-  let filtered = bookings;
-  if(currentFilter === 'solo') filtered = bookings.filter(b=>b.party_size===1);
-  else if(currentFilter === 'duo') filtered = bookings.filter(b=>b.party_size===2);
-  else if(currentFilter === 'trio') filtered = bookings.filter(b=>b.party_size===3);
-  else if(currentFilter === 'open') filtered = bookings.filter(b=>b.spots_left>0 && b.status==='pending');
+function renderCalendar(){
+  const el=document.getElementById('calContent');
+  let filtered=bookings;
+  if(currentFilter==='open') filtered=bookings.filter(b=>b.spots_left>0&&b.status==='pending');
+  else if(currentFilter!=='all') filtered=bookings.filter(b=>b.party_size===parseInt(currentFilter));
 
   if(!filtered.length){
-    el.innerHTML=`<div class="empty-state"><p style="font-size:2.5rem;margin-bottom:1rem">📭</p><p>Brak rezerwacji w tym filtrze.</p><a href="/book" class="btn btn-gold" style="margin-top:1.5rem">⚔️ Stwórz pierwszą rezerwację</a></div>`;
+    el.innerHTML=`<div style="text-align:center;padding:4rem;color:var(--text-muted)"><p style="font-size:2.5rem;margin-bottom:1rem">📭</p><p>Brak rezerwacji.</p><a href="/book" class="btn btn-gold" style="margin-top:1.5rem">⚔️ Stwórz rezerwację</a></div>`;
     return;
   }
 
-  // Group by date
-  const byDate = {};
-  filtered.forEach(b => {
-    if(!byDate[b.booked_date]) byDate[b.booked_date] = [];
-    byDate[b.booked_date].push(b);
-  });
+  const byDate={};
+  filtered.forEach(b=>{ if(!byDate[b.booked_date]) byDate[b.booked_date]=[]; byDate[b.booked_date].push(b); });
 
-  el.innerHTML = Object.entries(byDate).map(([date, slots]) => {
-    const d = new Date(date);
-    const dayStr = d.toLocaleDateString('pl-PL', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-    return `
-      <div class="day-group">
-        <div class="day-label">📅 ${dayStr}</div>
-        ${slots.map(b => renderSlot(b)).join('')}
-      </div>`;
+  el.innerHTML=Object.entries(byDate).map(([date,slots])=>{
+    const d=new Date(date);
+    const dayStr=d.toLocaleDateString('pl-PL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    return `<div class="day-group"><div class="day-label">📅 ${dayStr}</div>${slots.map(renderSlot).join('')}</div>`;
   }).join('');
 }
 
-function renderSlot(b) {
-  const isFull = b.spots_left <= 0;
-  const canJoin = !isFull && b.party_size > 1 && b.status === 'pending' && currentUser?.loggedIn;
-  const alreadyIn = b.members.some(m => m.username === currentUser?.username);
-  const spotsPercent = Math.round((b.spots_taken / b.party_size) * 100);
+function renderSlot(b){
+  const isFull=b.spots_left<=0;
+  const canJoin=!isFull&&b.party_size>1&&b.status==='pending'&&currentUser?.loggedIn;
+  const alreadyIn=b.members.some(m=>m.username===currentUser?.username);
+  const pct=Math.round((b.spots_taken/b.party_size)*100);
 
-  let membersHtml = b.members.map(m =>
-    `<div class="cal-member">⚔️ ${m.char_name} <span style="color:var(--text-muted);font-size:.8rem">(${m.char_class} poz.${m.char_level})</span></div>`
-  ).join('');
+  let membersHtml=b.members.map(m=>`<div class="cal-member">⚔️ ${m.char_name} <span style="color:var(--text-muted);font-size:.8rem">(${m.char_class} poz.${m.char_level})</span></div>`).join('');
+  for(let i=b.spots_taken;i<b.party_size;i++) membersHtml+=`<div class="cal-member-empty">wolne miejsce...</div>`;
 
-  for(let i = b.spots_taken; i < b.party_size; i++) {
-    membersHtml += `<div class="cal-member-empty">wolne miejsce...</div>`;
-  }
+  let actionBtn='';
+  if(alreadyIn) actionBtn=`<span class="badge badge-active">✓ Zapisany</span>`;
+  else if(canJoin) actionBtn=`<button class="btn btn-success btn-sm" onclick="openJoin(${b.id},'${b.service_name}','${b.booked_date}','${b.booked_time}',${b.spots_left})">+ Dołącz</button>`;
+  else if(!currentUser?.loggedIn&&!isFull&&b.party_size>1&&b.status==='pending') actionBtn=`<a href="/login?redirect=/calendar" class="btn btn-outline btn-sm">Zaloguj by dołączyć</a>`;
 
-  let actionBtn = '';
-  if(alreadyIn) {
-    actionBtn = `<span class="badge badge-active" style="font-size:.7rem">✓ Zapisany</span>`;
-  } else if(canJoin) {
-    actionBtn = `<button class="btn btn-success btn-sm" onclick="openJoin(${b.id}, '${b.service_name}', '${b.booked_date}', '${b.booked_time}', ${b.spots_left})">+ Dołącz do party</button>`;
-  } else if(!currentUser?.loggedIn && !isFull && b.party_size > 1 && b.status === 'pending') {
-    actionBtn = `<a href="/login?redirect=/calendar" class="btn btn-outline btn-sm">Zaloguj by dołączyć</a>`;
-  }
-
-  return `
-    <div class="cal-slot fade-up">
-      <div class="cal-slot-header">
-        <div>
-          <div class="cal-slot-time">${partyIcons[b.party_size]} ${b.booked_time} &nbsp;·&nbsp; ${b.service_name}</div>
-          <div class="cal-slot-type" style="margin-top:.3rem">${partyNames[b.party_size]} · ${b.price_sm.toLocaleString()} SM/h od osoby · Poz. 45–75</div>
-        </div>
-        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-          <span class="badge ${isFull ? 'badge-full' : 'badge-open'}">${isFull ? 'Pełne' : b.spots_left+' wolne'}</span>
-          <span class="badge ${statusBadge[b.status]||'badge-pending'}">${statusLabel[b.status]||b.status}</span>
-          ${actionBtn}
-        </div>
+  return `<div class="cal-slot fade-up">
+    <div class="cal-slot-header">
+      <div>
+        <div class="cal-slot-time">${PARTY_ICONS[b.party_size]||''} ${b.booked_time} · ${b.service_name}</div>
+        <div style="font-family:'Cinzel',serif;font-size:.65rem;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-top:.2rem">${PARTY_NAMES[b.party_size]} · ${b.price_sm?.toLocaleString()} SM/h · Poz. 45–75</div>
       </div>
-      <div class="cal-members">${membersHtml}</div>
-      <div class="spots-bar"><div class="spots-fill ${isFull?'full':''}" style="width:${spotsPercent}%"></div></div>
-      ${b.note ? `<div style="margin-top:.6rem;font-size:.85rem;color:var(--text-muted);font-style:italic">📝 ${b.note}</div>` : ''}
-    </div>`;
+      <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+        <span class="badge ${isFull?'badge-full':'badge-open'}">${isFull?'Pełne':b.spots_left+' wolne'}</span>
+        <span class="badge ${STATUS_BADGES[b.status]||'badge-pending'}">${STATUS_LABELS[b.status]||b.status}</span>
+        ${actionBtn}
+      </div>
+    </div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem">${membersHtml}</div>
+    <div class="spots-bar"><div class="spots-fill ${isFull?'full':''}" style="width:${pct}%"></div></div>
+    ${b.note?`<div style="margin-top:.5rem;font-size:.85rem;color:var(--text-muted);font-style:italic">📝 ${b.note}</div>`:''}
+  </div>`;
 }
 
-function openJoin(id, name, date, time, spotsLeft) {
-  joinBookingId = id;
-  document.getElementById('joinInfo').innerHTML = `<strong style="color:var(--text-bright)">${name}</strong><br>📅 ${date} o ${time} &nbsp;·&nbsp; Wolnych miejsc: ${spotsLeft}`;
-  document.getElementById('joinAlert').innerHTML = '';
-  document.getElementById('jCharName').value = '';
-  document.getElementById('jCharClass').value = '';
-  document.getElementById('jCharLevel').value = '';
-  document.getElementById('jTargetLevel').value = '';
-  document.getElementById('jDiscord').value = '';
+function openJoin(id,name,date,time,spots){
+  joinBookingId=id;
+  document.getElementById('joinInfo').innerHTML=`<strong style="color:var(--text-bright)">${name}</strong><br>📅 ${date} o ${time} · Wolnych miejsc: ${spots}`;
+  document.getElementById('joinAlert').innerHTML='';
+  ['jCharName','jCharClass','jCharLevel','jTargetLevel','jDiscord'].forEach(id=>{ document.getElementById(id).value=''; });
+  document.getElementById('joinBtn').disabled=false;
+  document.getElementById('joinBtn').textContent='⚔️ Dołącz do party';
   document.getElementById('joinModal').classList.add('open');
 }
+function closeModal(){ document.getElementById('joinModal').classList.remove('open'); joinBookingId=null; }
+document.getElementById('joinModal').addEventListener('click',e=>{ if(e.target===document.getElementById('joinModal')) closeModal(); });
 
-function closeModal() {
-  document.getElementById('joinModal').classList.remove('open');
-  joinBookingId = null;
-}
-
-async function submitJoin() {
-  const btn = document.getElementById('joinBtn');
-  const alertEl = document.getElementById('joinAlert');
-  const charName = document.getElementById('jCharName').value.trim();
-  const charClass = document.getElementById('jCharClass').value;
-  const charLevel = document.getElementById('jCharLevel').value;
-  const targetLevel = document.getElementById('jTargetLevel').value;
+async function submitJoin(){
+  const btn=document.getElementById('joinBtn');
+  const alertEl=document.getElementById('joinAlert');
+  const charName=document.getElementById('jCharName').value.trim();
+  const charClass=document.getElementById('jCharClass').value;
+  const charLevel=document.getElementById('jCharLevel').value;
+  const targetLevel=document.getElementById('jTargetLevel').value;
   if(!charName||!charClass||!charLevel||!targetLevel){
-    alertEl.innerHTML='<div class="alert alert-error">Wypełnij wszystkie wymagane pola.</div>'; return;
+    alertEl.innerHTML='<div class="alert alert-error">Wypełnij wszystkie wymagane pola.</div>';return;
   }
-  btn.disabled=true; btn.textContent='Dołączanie...';
-  const res = await fetch(`/api/bookings/${joinBookingId}/join`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ char_name:charName, char_class:charClass, char_level:charLevel, target_level:targetLevel, contact_discord:document.getElementById('jDiscord').value })
+  btn.disabled=true;btn.textContent='Dołączanie...';
+  const res=await fetch(`/api/bookings/${joinBookingId}/join`,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({char_name:charName,char_class:charClass,char_level:charLevel,target_level:targetLevel,contact_discord:document.getElementById('jDiscord').value})
   }).then(r=>r.json());
-  if(res.success){
-    closeModal();
-    await loadCalendar();
-  } else {
-    alertEl.innerHTML=`<div class="alert alert-error">${res.error}</div>`;
-    btn.disabled=false; btn.textContent='⚔️ Dołącz do party';
-  }
+  if(res.success){ closeModal(); await loadCalendar(); }
+  else{ alertEl.innerHTML=`<div class="alert alert-error">${res.error}</div>`;btn.disabled=false;btn.textContent='⚔️ Dołącz do party'; }
 }
-
-document.getElementById('joinModal').addEventListener('click', e => {
-  if(e.target === document.getElementById('joinModal')) closeModal();
-});
 </script>
 </body>
 </html>
