@@ -15,17 +15,13 @@ router.post('/register', [
   body('password').isLength({ min: 6 }).withMessage('Hasło musi mieć min. 6 znaków.'),
 ], async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.json({ success: false, errors: errors.array().map(e => e.msg) });
-  }
+  if (!errors.isEmpty()) return res.json({ success: false, errors: errors.array().map(e => e.msg) });
   const { username, email, password } = req.body;
-  const existing = db.prepare('SELECT id FROM users WHERE username=? OR email=?').get(username, email);
-  if (existing) {
-    return res.json({ success: false, errors: ['Nazwa użytkownika lub email już istnieje.'] });
-  }
+  const existing = await db.get2('SELECT id FROM users WHERE username=? OR email=?', [username, email]);
+  if (existing) return res.json({ success: false, errors: ['Nazwa użytkownika lub email już istnieje.'] });
   const hash = await bcrypt.hash(password, 10);
-  const result = db.prepare('INSERT INTO users (username, email, password) VALUES (?,?,?)').run(username, email, hash);
-  req.session.userId = result.lastInsertRowid;
+  const result = await db.run2('INSERT INTO users (username, email, password) VALUES (?,?,?)', [username, email, hash]);
+  req.session.userId = result.lastID;
   req.session.username = username;
   req.session.role = 'user';
   res.json({ success: true, redirect: '/' });
@@ -38,7 +34,7 @@ router.get('/login', (req, res) => {
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  const user = db.prepare('SELECT * FROM users WHERE username=?').get(username);
+  const user = await db.get2('SELECT * FROM users WHERE username=?', [username]);
   if (!user) return res.json({ success: false, errors: ['Nieprawidłowa nazwa lub hasło.'] });
   const match = await bcrypt.compare(password, user.password);
   if (!match) return res.json({ success: false, errors: ['Nieprawidłowa nazwa lub hasło.'] });
