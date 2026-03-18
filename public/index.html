@@ -9,6 +9,11 @@
     .day-label{font-family:'Cinzel',serif;font-size:.8rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;padding:.5rem 0;border-bottom:2px solid var(--border);margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem;}
     .day-group{margin-bottom:2rem;}
     .savings-banner{background:linear-gradient(135deg,#003020,#004030);border:1px solid #006040;border-radius:var(--r);padding:.8rem 1.1rem;margin-bottom:1.5rem;font-size:.88rem;color:var(--green);}
+    .status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+    .status-online{background:#40d090;box-shadow:0 0 6px #40d09088;}
+    .status-idle{background:#f0c040;box-shadow:0 0 6px #f0c04088;}
+    .status-dnd{background:#f04060;box-shadow:0 0 6px #f0406088;}
+    .status-offline{background:#555;} 
   </style>
 </head>
 <body>
@@ -41,16 +46,14 @@
     </div>
   </section>
 
-  <!-- SLOTS DIRECTLY ON HOMEPAGE -->
+  <!-- SLOTS -->
   <section class="section">
     <div class="wrap">
       <h2 class="section-title">Dostępne <span>Terminy</span></h2>
       <p class="section-sub">Wybierz termin i zarezerwuj miejsce w 30 sekund</p>
-
       <div class="savings-banner">
         💰 <strong>Zaoszczędź na Duo/Trio!</strong> Solo kosztuje 5000 SM/h · Duo tylko 2000 SM/h · Trio zaledwie 1500 SM/h od osoby!
       </div>
-
       <div class="filter-bar">
         <button class="filter-btn active" onclick="setFilter('all',this)">Wszystkie</button>
         <button class="filter-btn" onclick="setFilter('open',this)">🟢 Wolne miejsca</button>
@@ -59,7 +62,6 @@
         <button class="filter-btn" onclick="setFilter('duo',this)">⚔️ Duo</button>
         <button class="filter-btn" onclick="setFilter('trio',this)">🔱 Trio</button>
       </div>
-
       <div id="slotsContent"><div class="spinner"></div></div>
     </div>
   </section>
@@ -78,8 +80,9 @@
           <div style="color:var(--text-b);margin-bottom:.3rem">Buty + Tarcza + Naszyjnik</div>
           <div style="color:var(--gold-l);font-size:1.1rem;font-family:'Cinzel',serif;margin-bottom:.3rem">60% szansy na Bonus DOŚ</div>
           <div style="color:var(--text-m);font-size:.85rem;margin-bottom:1rem">Średnio co 1.7 potwora dostajesz +30% exp</div>
-          <div style="border-top:1px solid var(--border);padding-top:.8rem;display:flex;justify-content:space-between;align-items:center">
-            <div><div style="font-family:'Cinzel',serif;color:var(--gold-l)">500 SM/h</div><div style="font-size:.78rem;color:var(--text-m)">Zastaw: 30 000 SM (zwrotny)</div></div>
+          <div style="border-top:1px solid var(--border);padding-top:.8rem">
+            <div style="font-family:'Cinzel',serif;color:var(--gold-l)">500 SM/h</div>
+            <div style="font-size:.78rem;color:var(--text-m)">Zastaw: 30 000 SM (zwrotny)</div>
           </div>
         </div>
         <div class="card">
@@ -87,9 +90,34 @@
           <div style="color:var(--text-b);margin-bottom:.3rem">Naszyjnik + Buty (bez tarczy)</div>
           <div style="color:var(--gold-l);font-size:1.1rem;font-family:'Cinzel',serif;margin-bottom:.3rem">40% szansy na Bonus DOŚ</div>
           <div style="color:var(--text-m);font-size:.85rem;margin-bottom:1rem">Średnio co 2.5 potwora dostajesz +30% exp</div>
-          <div style="border-top:1px solid var(--border);padding-top:.8rem;display:flex;justify-content:space-between;align-items:center">
-            <div><div style="font-family:'Cinzel',serif;color:var(--gold-l)">300 SM/h</div><div style="font-size:.78rem;color:var(--text-m)">Zastaw: 10 000 SM (zwrotny)</div></div>
+          <div style="border-top:1px solid var(--border);padding-top:.8rem">
+            <div style="font-family:'Cinzel',serif;color:var(--gold-l)">300 SM/h</div>
+            <div style="font-size:.78rem;color:var(--text-m)">Zastaw: 10 000 SM (zwrotny)</div>
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEAM / CONTACT -->
+  <section class="section">
+    <div class="wrap">
+      <h2 class="section-title">Nasza <span>Ekipa</span></h2>
+      <p class="section-sub">Napisz do nas bezpośrednio na Discordzie</p>
+      <div class="grid-2" style="align-items:start;gap:1.5rem">
+        <div class="card">
+          <div style="font-family:'Cinzel',serif;font-size:.85rem;color:var(--text-b);margin-bottom:1rem">👥 Członkowie ekipy</div>
+          <div id="teamList"><div class="spinner"></div></div>
+          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--text-m)">
+            Status odświeżany co 60 sekund
+          </div>
+        </div>
+        <div>
+          <iframe src="https://discord.com/widget?id=1336843340662050857&theme=dark"
+            width="100%" height="350" allowtransparency="true" frameborder="0"
+            sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+            style="border-radius:var(--r);border:1px solid var(--border);display:block">
+          </iframe>
         </div>
       </div>
     </div>
@@ -154,10 +182,45 @@
 <script>
 let slots=[], filter='all', selectedSlotId=null, selectedPkg=null, selectedEq='none';
 
-async function load(){
-  slots=await fetch('/api/slots').then(r=>r.json());
-  const free=slots.filter(s=>!s.package_type||(s.spots_left&&s.spots_left>0)).length;
-  document.getElementById('statSlots').textContent=free||'—';
+const STATUS_INFO = {
+  online:  { label: 'Online',   cls: 'status-online' },
+  idle:    { label: 'Zaraz wracam', cls: 'status-idle' },
+  dnd:     { label: 'Nie przeszkadzać', cls: 'status-dnd' },
+  offline: { label: 'Offline',  cls: 'status-offline' },
+  unknown: { label: 'Offline',  cls: 'status-offline' }
+};
+
+async function loadTeam() {
+  try {
+    const team = await fetch('/api/team/status').then(r=>r.json());
+    document.getElementById('teamList').innerHTML = team.map(m => {
+      const s = STATUS_INFO[m.status] || STATUS_INFO.offline;
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem .7rem;background:#0a0e1a;border:1px solid var(--border);border-radius:var(--r);margin-bottom:.4rem">
+        <div style="display:flex;align-items:center;gap:.7rem">
+          <div style="position:relative">
+            <img src="${m.avatar}" style="width:36px;height:36px;border-radius:50%;border:1px solid var(--border)" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
+            <div class="status-dot ${s.cls}" style="position:absolute;bottom:0;right:0;border:2px solid #0a0e1a"></div>
+          </div>
+          <div>
+            <div style="font-family:'Cinzel',serif;font-size:.85rem;color:var(--text-b)">${m.display}</div>
+            <div style="font-size:.72rem;color:var(--text-m)">${s.label}</div>
+          </div>
+        </div>
+        <a href="https://discord.com/users/${m.id}" target="_blank" class="btn btn-outline btn-xs">Napisz</a>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('teamList').innerHTML = '<p style="color:var(--text-m);font-size:.85rem">Nie można załadować statusów.</p>';
+  }
+}
+
+loadTeam();
+setInterval(loadTeam, 60000);
+
+async function load() {
+  slots = await fetch('/api/slots').then(r=>r.json());
+  const free = slots.filter(s=>!s.package_type||(s.spots_left&&s.spots_left>0)).length;
+  document.getElementById('statSlots').textContent = free||'—';
   render();
 }
 
@@ -176,25 +239,18 @@ function render(){
   else if(filter==='solo') list=slots.filter(s=>s.package_type==='solo'||!s.package_type);
   else if(filter==='duo') list=slots.filter(s=>s.package_type==='duo');
   else if(filter==='trio') list=slots.filter(s=>s.package_type==='trio');
-
   list=list.sort((a,b)=>{
     if(a.is_open_party&&!b.is_open_party) return -1;
     if(!a.is_open_party&&b.is_open_party) return 1;
     if(a.date!==b.date) return a.date>b.date?1:-1;
     return a.time>b.time?1:-1;
   });
-
   if(!list.length){
-    el.innerHTML=`<div style="text-align:center;padding:3rem;color:var(--text-m)">
-      <p style="font-size:2.5rem;margin-bottom:1rem">📭</p>
-      <p>Brak dostępnych terminów w tej chwili.</p>
-      <p style="margin-top:.5rem;font-size:.88rem">Sprawdź później lub obserwuj Discord.</p>
-    </div>`;return;
+    el.innerHTML=`<div style="text-align:center;padding:3rem;color:var(--text-m)"><p style="font-size:2.5rem;margin-bottom:1rem">📭</p><p>Brak dostępnych terminów.</p><p style="margin-top:.5rem;font-size:.88rem">Sprawdź później lub obserwuj Discord.</p></div>`;
+    return;
   }
-
   const byDate={};
   list.forEach(s=>{(byDate[s.date]=byDate[s.date]||[]).push(s);});
-
   el.innerHTML=Object.entries(byDate).map(([date,daySlots])=>{
     const isToday=date===new Date().toISOString().split('T')[0];
     return `<div class="day-group">
@@ -235,10 +291,7 @@ function renderSlot(s){
     ${s.note?`<div style="font-size:.75rem;color:var(--text-m);font-style:italic;margin-top:.4rem">📝 ${s.note}</div>`:''}
     <div class="slot-footer" style="margin-top:.8rem">
       <span class="badge ${isFull?'b-full':partyOpen?'b-party':'b-open'}">${isFull?'Pełny':partyOpen?'Szuka party':s.package_type?s.spots_left+' wolne':'Wolny'}</span>
-      ${isFull
-        ?'<span style="color:var(--text-m);font-size:.8rem">Zajęty</span>'
-        :`<button class="btn btn-gold btn-sm" onclick="openBook(${s.id},'${s.date}','${s.time}','${s.package_type||''}',${s.spots_left||3})">Zarezerwuj</button>`
-      }
+      ${isFull?'<span style="color:var(--text-m);font-size:.8rem">Zajęty</span>':`<button class="btn btn-gold btn-sm" onclick="openBook(${s.id},'${s.date}','${s.time}','${s.package_type||''}',${s.spots_left||3})">Zarezerwuj</button>`}
     </div>
   </div>`;
 }
@@ -253,7 +306,6 @@ function openBook(id,date,time,pkg,spotsLeft){
   document.getElementById('bDiscord').value='';
   document.getElementById('bLFP').checked=false;
   if(typeof hcaptcha!=='undefined') hcaptcha.reset();
-
   const pkgSection=document.getElementById('pkgSection');
   const lfpSection=document.getElementById('lfpSection');
   if(pkg){
@@ -266,27 +318,21 @@ function openBook(id,date,time,pkg,spotsLeft){
     lfpSection.style.display=pkg!=='solo'?'':'none';
   } else {
     pkgSection.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-m);margin-bottom:.6rem">Wybierz pakiet *</div>
-      <div class="pkg-grid">
-        ${Object.entries(PKG).map(([k,p])=>`
-          <div class="pkg-opt" onclick="selectPkg('${k}')" id="pkg_${k}">
-            <div class="pkg-icon">${p.icon}</div>
-            <div class="pkg-name">${p.name}</div>
-            <div class="pkg-price">${p.price.toLocaleString()} SM/h</div>
-            ${k!=='solo'?`<div class="pkg-save">Taniej o ${(PKG.solo.price-p.price).toLocaleString()} SM/h!</div>`:''}
-          </div>`).join('')}
+      <div class="pkg-grid">${Object.entries(PKG).map(([k,p])=>`
+        <div class="pkg-opt" onclick="selectPkg('${k}')" id="pkg_${k}">
+          <div class="pkg-icon">${p.icon}</div>
+          <div class="pkg-name">${p.name}</div>
+          <div class="pkg-price">${p.price.toLocaleString()} SM/h</div>
+          ${k!=='solo'?`<div class="pkg-save">Taniej o ${(PKG.solo.price-p.price).toLocaleString()} SM/h!</div>`:''}
+        </div>`).join('')}
       </div>`;
     lfpSection.style.display='none';
   }
-
   document.getElementById('eqGrid').innerHTML=Object.entries(EQ).map(([k,e])=>`
     <div class="eq-card ${k==='none'?'selected':''}" onclick="selectEq('${k}')" id="eq_${k}">
       <div class="eq-title">${k==='none'?'❌ Bez wypożyczenia':k==='full'?'👑 Pełny Set':'⚡ Naszyjnik + Buty'}</div>
-      ${e.bonus?`<div class="eq-bonus">${e.bonus}% szansy na Bonus DOŚ</div>
-      <div class="eq-desc">${e.items}</div>
-      <div class="eq-price">${e.price} SM/h <span class="eq-deposit">· zastaw ${e.deposit.toLocaleString()} SM (zwrotny)</span></div>`
-      :`<div class="eq-desc" style="color:var(--text-m)">Expienie bez bonusu DOŚ z eqp</div>`}
+      ${e.bonus?`<div class="eq-bonus">${e.bonus}% szansy na Bonus DOŚ</div><div class="eq-desc">${e.items}</div><div class="eq-price">${e.price} SM/h <span class="eq-deposit">· zastaw ${e.deposit.toLocaleString()} SM (zwrotny)</span></div>`:`<div class="eq-desc" style="color:var(--text-m)">Expienie bez bonusu DOŚ z eqp</div>`}
     </div>`).join('');
-
   document.getElementById('bookOverlay').classList.add('open');
 }
 
