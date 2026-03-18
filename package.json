@@ -1,6 +1,6 @@
 {
   "name": "patologiczne-expowisko",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "System rezerwacji expienia - Patologiczne Expowisko Metin2",
   "main": "server.js",
   "scripts": {
@@ -11,10 +11,9 @@
     "connect-sqlite3": "^0.9.13",
     "express": "^4.18.2",
     "express-session": "^1.17.3",
-    "express-validator": "^7.0.1",
     "sqlite3": "^5.1.7",
     "tweetnacl": "^1.0.3",
-    "ws": "^8.16.0"
+    "node-fetch": "^2.7.0"
   },
   "engines": {
     "node": ">=18.0.0"

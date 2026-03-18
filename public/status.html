@@ -6,82 +6,131 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<div class="chunjo-banner"><strong style="color:var(--gold-light);letter-spacing:.2em">CHUNJO</strong> — Patologiczne Expowisko</div>
+<div class="chunjo-banner"><strong style="color:var(--gold-l);letter-spacing:.2em">CHUNJO</strong> — Patologiczne Expowisko</div>
 <nav>
   <a class="nav-logo" href="/">⚔️ Patologiczne <span>Expowisko</span></a>
-  <div class="nav-links">
-    <a href="/">Strona główna</a>
-    <a href="/slots">📅 Terminy</a>
-  </div>
+  <div class="nav-links"><a href="/">Strona główna</a><a href="/slots">📅 Terminy</a></div>
 </nav>
 <main>
-<div style="max-width:600px;margin:0 auto;padding:3rem 1.5rem" id="content">
+<div style="max-width:580px;margin:0 auto;padding:2.5rem 1.2rem" id="content">
   <div class="spinner"></div>
 </div>
 </main>
-<footer><p>⚔️ <strong style="color:var(--gold-light)">Patologiczne Expowisko</strong></p></footer>
-<script src="/js/nav.js"></script>
+
+<!-- REVIEW MODAL -->
+<div class="overlay" id="reviewOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('reviewOverlay').classList.remove('open')">✕</button>
+    <div class="modal-title">⭐ Oceń expienie</div>
+    <div id="reviewAlert"></div>
+    <div class="form-group">
+      <label class="form-label">Ocena *</label>
+      <div class="stars-input" id="starsInput">
+        <span class="star" onclick="setRating(1)">⭐</span>
+        <span class="star" onclick="setRating(2)">⭐</span>
+        <span class="star" onclick="setRating(3)">⭐</span>
+        <span class="star" onclick="setRating(4)">⭐</span>
+        <span class="star" onclick="setRating(5)">⭐</span>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">Komentarz (opcjonalne)</label><textarea id="reviewComment" class="form-control" rows="3" placeholder="Jak było?"></textarea></div>
+    <button class="btn btn-gold" style="width:100%" onclick="submitReview()">Wyślij opinię</button>
+  </div>
+</div>
+
+<footer><p>⚔️ <strong style="color:var(--gold-l)">Patologiczne Expowisko</strong></p></footer>
+<script src="/js/app.js"></script>
 <script>
-  const token=new URLSearchParams(location.search).get('token');
-  const steps=[
-    {key:'pending', label:'Rezerwacja złożona', desc:'Czekamy na potwierdzenie przez ekipę.'},
-    {key:'active',  label:'Rezerwacja potwierdzona!', desc:'Ekipa potwierdziła termin. Do zobaczenia w grze!'},
-    {key:'done',    label:'Expienie zakończone', desc:'Dziękujemy! Możesz zostawić opinię w panelu.'}
-  ];
+const token=new URLSearchParams(location.search).get('token');
+let currentRating=0, bookingData=null;
 
-  async function load(){
-    const el=document.getElementById('content');
-    if(!token){el.innerHTML='<div class="alert alert-error">Brak tokenu.</div>';return;}
-    const data=await fetch('/api/status/'+token).then(r=>r.json()).catch(()=>null);
-    if(!data||data.error){el.innerHTML='<div class="alert alert-error">Nie znaleziono rezerwacji.</div>';return;}
+const steps=[
+  {key:'pending',  label:'Rezerwacja złożona',      desc:'Czekamy na potwierdzenie przez ekipę.'},
+  {key:'active',   label:'Rezerwacja potwierdzona!', desc:'Ekipa potwierdziła. Godzina orientacyjna ±15 min.'},
+  {key:'done',     label:'Expienie zakończone',       desc:'Dziękujemy! Możesz zostawić opinię poniżej.'}
+];
 
-    const icon=PKG_ICONS[data.package_type]||'⚔️';
-    const isRejected=data.status==='rejected'||data.status==='cancelled';
-    const currentIdx=steps.findIndex(s=>s.key===data.status);
+async function load(){
+  const el=document.getElementById('content');
+  if(!token){el.innerHTML='<div class="alert alert-error">Brak tokenu rezerwacji.</div>';return;}
+  const data=await fetch('/api/status/'+token).then(r=>r.json()).catch(()=>null);
+  if(!data||data.error){el.innerHTML='<div class="alert alert-error">Nie znaleziono rezerwacji.</div>';return;}
+  bookingData=data;
 
-    el.innerHTML=`
-      <h1 style="font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:var(--text-bright);margin-bottom:.3rem">Status <span style="color:var(--gold-light)">Rezerwacji</span></h1>
-      <p style="color:var(--text-muted);font-style:italic;margin-bottom:2rem">Rezerwacja #${data.id}</p>
+  const pkg=PKG[data.package_type]||{icon:'⚔️',name:data.package_type,price:0};
+  const eq=EQ[data.equipment_rental]||EQ.none;
+  const isRejected=data.status==='rejected'||data.status==='cancelled';
+  const currentIdx=steps.findIndex(s=>s.key===data.status);
 
-      <div class="card" style="margin-bottom:1.5rem">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
-          <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--text-bright)">${icon} ${data.package_name}</div>
-          <span class="badge ${STATUS_BADGES[data.status]||'badge-pending'}">${STATUS_LABELS[data.status]||data.status}</span>
-        </div>
-        <div style="display:flex;gap:1.5rem;flex-wrap:wrap;color:var(--text-muted);font-size:.9rem;margin-bottom:1rem">
-          <span>📅 ${data.date} o ${data.time}</span>
-          <span>💰 ${data.price_sm?.toLocaleString()} SM/h</span>
-          <span>👥 ${data.max_players} ${data.max_players===1?'osoba':'osoby'} maks.</span>
-        </div>
-        ${data.slot_bookings?.length?`
-          <div style="border-top:1px solid var(--border);padding-top:1rem">
-            <div style="font-family:'Cinzel',serif;font-size:.7rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem">Party</div>
-            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-              ${data.slot_bookings.map(m=>`<div style="background:#0a0e1a;border:1px solid var(--border);border-radius:4px;padding:.2rem .6rem;font-size:.85rem">⚔️ ${m.char_name} (${m.char_class} poz.${m.char_level})</div>`).join('')}
-            </div>
-          </div>`:''
-        }
+  el.innerHTML=`
+    <h1 style="font-family:'Cinzel',serif;font-size:1.6rem;font-weight:900;color:var(--text-b);margin-bottom:.3rem">Status <span style="color:var(--gold-l)">Rezerwacji</span></h1>
+    <p style="color:var(--text-m);font-style:italic;margin-bottom:1.8rem">Rezerwacja #${data.id}</p>
+
+    <div class="card" style="margin-bottom:1.3rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
+        <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--text-b)">${pkg.icon} ${pkg.name} · ${data.date} o ${data.time}</div>
+        ${badge(data.status)}
       </div>
-
-      ${isRejected
-        ?`<div class="alert alert-error">Rezerwacja została ${data.status==='cancelled'?'anulowana':'odrzucona'}. Skontaktuj się z ekipą na Discordzie.</div>`
-        :`<div class="status-timeline">
-          ${steps.map((s,i)=>{
-            const isDone=i<currentIdx||(i===currentIdx&&data.status==='done');
-            const isActive=i===currentIdx&&data.status!=='done';
-            return `<div class="status-step ${isDone?'done':''} ${isActive?'active':''}">
-              <div class="status-step-title">${isDone||isActive?'✓ ':''} ${s.label}</div>
-              <div class="status-step-desc">${s.desc}</div>
-            </div>`;
-          }).join('')}
-        </div>`
-      }
-      <div style="margin-top:2rem;padding:1rem;background:#0a0e1a;border:1px solid var(--border);border-radius:var(--radius);font-size:.85rem;color:var(--text-muted)">
-        💡 Masz pytania? Zaloguj się i użyj czatu w panelu rezerwacji.
+      <div style="color:var(--text-m);font-size:.85rem;margin-bottom:.3rem">±15 min · orientacyjna godzina</div>
+      <div style="display:flex;gap:1.2rem;flex-wrap:wrap;color:var(--text-m);font-size:.85rem;margin-bottom:1rem">
+        <span>⚔️ ${data.char_name} (${data.char_class} poz.${data.char_level})</span>
+        <span>💰 ${pkg.price.toLocaleString()} SM/h</span>
       </div>
-    `;
+      ${eq.bonus?`<div style="background:#1a1400;border:1px solid var(--gold-d);border-radius:4px;padding:.5rem .8rem;font-size:.82rem;color:var(--gold-l)">🎯 Wynajem eqp: ${eq.name} (${eq.bonus}% szansy DOŚ) · ${eq.price} SM/h · zastaw ${eq.deposit.toLocaleString()} SM</div>`:''}
+      ${data.party&&data.party.length>1?`
+        <div style="margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--border)">
+          <div style="font-family:'Cinzel',serif;font-size:.65rem;color:var(--text-m);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem">Party</div>
+          <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+            ${data.party.map(m=>`<div style="background:#0a0e1a;border:1px solid var(--border);border-radius:4px;padding:.18rem .55rem;font-size:.82rem">⚔️ ${m.char_name} (${m.char_class} poz.${m.char_level})</div>`).join('')}
+          </div>
+        </div>`:''}
+    </div>
+
+    ${isRejected
+      ?`<div class="alert alert-error">Rezerwacja została ${data.status==='cancelled'?'anulowana':'odrzucona'}.</div>`
+      :`<div class="timeline">
+        ${steps.map((s,i)=>{
+          const isDone=i<currentIdx||(i===currentIdx&&data.status==='done');
+          const isActive=i===currentIdx&&data.status!=='done';
+          return `<div class="t-step ${isDone?'done':''} ${isActive?'active':''}">
+            <div class="t-title">${isDone||isActive?'✓ ':''}${s.label}</div>
+            <div class="t-desc">${s.desc}</div>
+          </div>`;
+        }).join('')}
+      </div>`
+    }
+
+    ${data.status==='done'?`
+      <div class="card" style="margin-top:1.2rem;text-align:center">
+        <div style="font-family:'Cinzel',serif;font-size:.9rem;color:var(--text-b);margin-bottom:.8rem">Jak oceniasz expienie?</div>
+        <button class="btn btn-gold" onclick="document.getElementById('reviewOverlay').classList.add('open')">⭐ Zostaw opinię</button>
+      </div>`:''}
+
+    <div style="margin-top:1.2rem;padding:.9rem;background:#0a0e1a;border:1px solid var(--border);border-radius:var(--r);font-size:.82rem;color:var(--text-m)">
+      💬 Masz pytania? Napisz na Discordzie do ekipy.
+    </div>
+  `;
+}
+
+function setRating(r){
+  currentRating=r;
+  document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<r));
+}
+
+async function submitReview(){
+  if(!currentRating){document.getElementById('reviewAlert').innerHTML='<div class="alert alert-error">Wybierz ocenę.</div>';return;}
+  const res=await fetch('/api/reviews',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token,rating:currentRating,comment:document.getElementById('reviewComment').value,reviewer_name:bookingData?.char_name})
+  }).then(r=>r.json());
+  if(res.success){
+    document.getElementById('reviewOverlay').classList.remove('open');
+    alert('Dziękujemy za opinię! ⭐');
+  } else {
+    document.getElementById('reviewAlert').innerHTML=`<div class="alert alert-error">${res.error}</div>`;
   }
-  load();
+}
+
+load();
 </script>
 </body>
 </html>

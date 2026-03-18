@@ -9,17 +9,15 @@ function apiRequest(method, path, body) {
     const req = https.request({
       hostname: 'discord.com',
       path: '/api/v10' + path,
-      method: method,
+      method,
       headers: Object.assign(
         { 'Authorization': 'Bot ' + TOKEN, 'Content-Type': 'application/json' },
         data ? { 'Content-Length': Buffer.byteLength(data) } : {}
       )
-    }, function(res) {
+    }, res => {
       let raw = '';
-      res.on('data', function(c) { raw += c; });
-      res.on('end', function() {
-        try { resolve(JSON.parse(raw)); } catch(e) { resolve({}); }
-      });
+      res.on('data', c => raw += c);
+      res.on('end', () => { try { resolve(JSON.parse(raw)); } catch(e) { resolve({}); } });
     });
     req.on('error', reject);
     if (data) req.write(data);
@@ -27,48 +25,46 @@ function apiRequest(method, path, body) {
   });
 }
 
+const PKG_NAMES = { solo: 'Solo', duo: 'Duo', trio: 'Trio' };
+const PKG_ICONS = { solo: '🗡️', duo: '⚔️', trio: '🔱' };
+const PRICES = { solo: 5000, duo: 2000, trio: 1500 };
+const EQ_NAMES = { none: 'Brak', full: 'Pełny set (+60% szansy DOŚ)', partial: 'Naszyjnik + buty (+40% szansy DOŚ)' };
+const EQ_PRICES = { none: 0, full: 500, partial: 300 };
+const EQ_DEPOSIT = { none: 0, full: 30000, partial: 10000 };
+
 async function sendBookingNotification(opts) {
   if (!TOKEN || !CHANNEL_ID) return;
 
-  const typeLabels = {
-    new_booking: 'NOWA REZERWACJA',
-    cancelled: 'ANULOWANO REZERWACJE',
-    joined: 'DOLACZYL DO SLOTU'
-  };
-  const colors = {
-    new_booking: 0xf5c800,
-    cancelled: 0xff4444,
-    joined: 0x40d090
-  };
+  const pkg = opts.packageType;
+  const eq = opts.equipmentRental;
+  const eqInfo = eq !== 'none' ? `${EQ_NAMES[eq]} (+${EQ_PRICES[eq]} SM/h, zastaw ${EQ_DEPOSIT[eq].toLocaleString()} SM)` : 'Brak';
 
   const fields = [
-    { name: 'Pakiet', value: opts.packageName, inline: true },
-    { name: 'Termin', value: opts.date + ' o ' + opts.time, inline: true },
-    { name: 'Miejsc', value: opts.spotsLeft + '/' + opts.maxPlayers + ' wolnych', inline: true },
-    { name: 'Gracz (konto)', value: opts.username, inline: true },
-    { name: 'Postac', value: opts.charName + ' (' + opts.charClass + ' poz.' + opts.charLevel + ')', inline: true },
-    { name: 'Discord gracza', value: opts.discord || 'brak', inline: true }
+    { name: 'Slot', value: `📅 ${opts.date} o ${opts.time} (±15 min)`, inline: true },
+    { name: 'Pakiet', value: `${PKG_ICONS[pkg]||'⚔️'} ${PKG_NAMES[pkg]||pkg} · ${PRICES[pkg]||0} SM/h`, inline: true },
+    { name: 'Gracz', value: opts.charName + ' (' + opts.charClass + ' poz.' + opts.charLevel + ')', inline: true },
+    { name: 'Discord gracza', value: '`' + opts.contactDiscord + '`', inline: true },
+    { name: 'Wynajem eqp', value: eqInfo, inline: true },
+    { name: 'Szuka party', value: opts.lookingForParty ? '✅ Tak' : '❌ Nie', inline: true }
   ];
-  if (opts.note) fields.push({ name: 'Uwagi slotu', value: opts.note });
 
-  const showButtons = opts.type === 'new_booking' || opts.type === 'joined';
-  const components = showButtons ? [{
-    type: 1,
-    components: [
-      { type: 2, style: 3, label: 'Przyjmij', custom_id: 'accept_' + opts.bookingId },
-      { type: 2, style: 4, label: 'Odrzuc', custom_id: 'reject_' + opts.bookingId }
-    ]
-  }] : [];
+  const confirmText = `Napisz do gracza:\n> Hej **${opts.charName}**! Twoja rezerwacja expienia ${PKG_NAMES[pkg]||pkg} na **${opts.date} o ${opts.time}** (±15 min) została potwierdzona! ${eq !== 'none' ? 'Pamiętaj o zastawie **' + EQ_DEPOSIT[eq].toLocaleString() + ' SM** za wypożyczenie eqp. ' : ''}Do zobaczenia w grze ⚔️`;
 
   await apiRequest('POST', '/channels/' + CHANNEL_ID + '/messages', {
     embeds: [{
-      title: typeLabels[opts.type] || 'POWIADOMIENIE',
-      color: colors[opts.type] || 0xf5c800,
-      fields: fields,
+      title: '🆕 NOWA REZERWACJA',
+      color: 0xf5c800,
+      fields,
       footer: { text: 'Rezerwacja #' + opts.bookingId + ' | Slot #' + opts.slotId },
       timestamp: new Date().toISOString()
     }],
-    components: components
+    components: [{
+      type: 1,
+      components: [
+        { type: 2, style: 3, label: '✅ Przyjmij', custom_id: 'accept_' + opts.bookingId },
+        { type: 2, style: 4, label: '❌ Odrzuć', custom_id: 'reject_' + opts.bookingId }
+      ]
+    }]
   });
 }
 
@@ -76,14 +72,14 @@ async function handleInteraction(interaction, db) {
   const custom_id = interaction.data && interaction.data.custom_id;
   if (!custom_id) return { type: 1 };
 
-  const isAccept = custom_id.indexOf('accept_') === 0;
-  const isReject = custom_id.indexOf('reject_') === 0;
+  const isAccept = custom_id.startsWith('accept_');
+  const isReject = custom_id.startsWith('reject_');
   if (!isAccept && !isReject) return { type: 1 };
 
   const bookingId = custom_id.replace('accept_', '').replace('reject_', '');
   const newStatus = isAccept ? 'active' : 'rejected';
   const color = isAccept ? 0x40d090 : 0xff4444;
-  const label = isAccept ? 'Przyjeto przez' : 'Odrzucono przez';
+  const label = isAccept ? '✅ Przyjęto przez' : '❌ Odrzucono przez';
 
   const clicker = (interaction.member && interaction.member.nick) ||
                   (interaction.member && interaction.member.user && interaction.member.user.username) ||
@@ -91,14 +87,16 @@ async function handleInteraction(interaction, db) {
 
   await db.run2('UPDATE bookings SET status=? WHERE id=?', [newStatus, bookingId]);
 
-  // Get booking info for the confirmation message
   const booking = await db.get2(`
-    SELECT b.*, s.date, s.time, s.package_name FROM bookings b
+    SELECT b.*, s.date, s.time FROM bookings b
     JOIN slots s ON b.slot_id = s.id WHERE b.id=?
   `, [bookingId]);
 
+  const eq = booking ? booking.equipment_rental : 'none';
+  const pkg = booking ? booking.package_type : 'solo';
+
   const confirmMsg = isAccept && booking
-    ? '\n\n**Napisz do gracza na Discordzie:**\n`' + (booking.contact_discord || 'brak nicka') + '`\n\n📋 Treść:\n> Hej! Twoja rezerwacja **' + booking.package_name + '** na **' + booking.date + ' o ' + booking.time + '** została potwierdzona! Do zobaczenia w grze ⚔️'
+    ? `\n\n📋 **Skopiuj i wyślij do gracza \`${booking.contact_discord}\`:**\n> Hej ${booking.char_name}! Twoja rezerwacja expienia ${PKG_NAMES[pkg]} na **${booking.date} o ${booking.time}** (±15 min) została potwierdzona! ${eq !== 'none' ? 'Pamiętaj o zastawie **' + EQ_DEPOSIT[eq].toLocaleString() + ' SM** za wypożyczenie eqp. ' : ''}Do zobaczenia w grze ⚔️`
     : '';
 
   const originalEmbed = interaction.message && interaction.message.embeds && interaction.message.embeds[0];
@@ -108,8 +106,8 @@ async function handleInteraction(interaction, db) {
     type: 7,
     data: {
       embeds: [{
-        title: (originalEmbed && originalEmbed.title) || 'Rezerwacja',
-        color: color,
+        title: originalEmbed && originalEmbed.title,
+        color,
         fields: originalFields.concat([{ name: label, value: clicker, inline: true }]),
         description: confirmMsg,
         footer: originalEmbed && originalEmbed.footer,
@@ -118,12 +116,12 @@ async function handleInteraction(interaction, db) {
       components: [{
         type: 1,
         components: [
-          { type: 2, style: 3, label: 'Przyjmij', custom_id: 'accept_' + bookingId, disabled: true },
-          { type: 2, style: 4, label: 'Odrzuc', custom_id: 'reject_' + bookingId, disabled: true }
+          { type: 2, style: 3, label: '✅ Przyjmij', custom_id: 'accept_' + bookingId, disabled: true },
+          { type: 2, style: 4, label: '❌ Odrzuć', custom_id: 'reject_' + bookingId, disabled: true }
         ]
       }]
     }
   };
 }
 
-module.exports = { sendBookingNotification, handleInteraction };
+module.exports = { sendBookingNotification, handleInteraction, PKG_NAMES, PKG_ICONS, PRICES, EQ_NAMES, EQ_PRICES, EQ_DEPOSIT };

@@ -2,111 +2,144 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Patologiczne Expowisko — Rezerwacje Expienia</title>
+  <title>Patologiczne Expowisko — Expienie Metin2 Chunjo</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 <div class="chunjo-banner">
-  <span class="chunjo-flag"><svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg></span>
-  Oferta wyłącznie dla graczy królestwa <strong style="color:var(--gold-light);letter-spacing:.25em">CHUNJO</strong>
-  <span class="chunjo-flag"><svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg></span>
+  <span class="flag"><svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg></span>
+  Oferta wyłącznie dla graczy królestwa <strong style="color:var(--gold-l);letter-spacing:.22em">CHUNJO</strong>
+  <span class="flag"><svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg></span>
 </div>
 <nav>
   <a class="nav-logo" href="/">⚔️ Patologiczne <span>Expowisko</span></a>
   <div class="nav-links">
     <a href="/" class="active">Strona główna</a>
-    <a href="/slots">📅 Dostępne terminy</a>
-    <a href="/dashboard" id="navDashboard" style="display:none">Moje rezerwacje</a>
-    <a href="/admin" id="navAdmin" style="display:none">Admin</a>
-    <span id="navUser" style="color:var(--gold-light);font-family:'Cinzel',serif;font-size:.8rem;display:none"></span>
-    <form action="/logout" method="post" style="display:none" id="logoutForm"><button class="btn btn-outline btn-sm">Wyloguj</button></form>
-    <a href="/login" class="btn btn-outline btn-sm" id="navLogin">Zaloguj</a>
-    <a href="/register" class="btn btn-gold btn-sm" id="navRegister">Zarejestruj</a>
+    <a href="/slots" class="btn btn-gold btn-sm">📅 Zarezerwuj termin</a>
   </div>
 </nav>
 <main>
-  <section class="hero container">
-    <p class="hero-eyebrow">
-      <svg width="20" height="14" viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg" style="border:1px solid var(--chunjo-border);border-radius:2px"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg>
-      Chunjo — Serwer Projekt Hard — Metin2
-      <svg width="20" height="14" viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg" style="border:1px solid var(--chunjo-border);border-radius:2px"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg>
+  <section class="hero wrap">
+    <p class="hero-tag">
+      <svg width="18" height="13" viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg" style="border:1px solid var(--cb);border-radius:2px"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg>
+      Chunjo · Serwer Projekt Hard · Metin2
+      <svg width="18" height="13" viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg" style="border:1px solid var(--cb);border-radius:2px"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg>
     </p>
     <h1 class="hero-title">Patologiczne<br><span>Expowisko</span></h1>
-    <p class="hero-sub">Wybierz dostępny termin i zarezerwuj miejsce. Szybko, tanio, bez stresu.</p>
+    <p class="hero-sub">Profesjonalne expienie dla graczy Chunjo. Wybierz termin, zapisz się w 30 sekund — bez rejestracji.</p>
     <div class="hero-cta">
       <a href="/slots" class="btn btn-gold">📅 Zobacz dostępne terminy</a>
-      <a href="/register" class="btn btn-outline" id="heroRegister">Zarejestruj się</a>
     </div>
     <div class="stats-bar">
-      <div class="stat"><div class="stat-value" id="statSlots">—</div><div class="stat-label">Dostępnych terminów</div></div>
-      <div class="stat"><div class="stat-value">45–75</div><div class="stat-label">Poziomy</div></div>
-      <div class="stat"><div class="stat-value" id="statRating">⭐</div><div class="stat-label">Średnia ocena</div></div>
-      <div class="stat"><div class="stat-value">Chunjo</div><div class="stat-label">Królestwo</div></div>
+      <div class="stat"><div class="stat-v" id="statSlots">—</div><div class="stat-l">Wolnych terminów</div></div>
+      <div class="stat"><div class="stat-v">45–75</div><div class="stat-l">Poziomy</div></div>
+      <div class="stat"><div class="stat-v" id="statRating">—</div><div class="stat-l">Średnia ocena</div></div>
+      <div class="stat"><div class="stat-v">±15 min</div><div class="stat-l">Tolerancja czasu</div></div>
     </div>
   </section>
 
-  <section class="section">
-    <div class="container">
-      <h2 class="section-title">Jak to <span>Działa?</span></h2>
-      <p class="section-sub">Prosty system — my dodajemy terminy, Ty je buokujesz</p>
+  <!-- EQP RENTAL SECTION -->
+  <section class="section" style="background:linear-gradient(180deg,transparent,#0d1220 30%,#0d1220 70%,transparent)">
+    <div class="wrap">
+      <h2 class="section-title">Wynajem <span>Ekwipunku</span></h2>
+      <p class="section-sub">Zwiększ szansę na Bonus DOŚ — wypożycz eqp z bonusem na doświadczenie</p>
+
+      <div style="background:#0a0e1a;border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.2rem;margin-bottom:1.5rem;font-size:.88rem;color:var(--text-m);line-height:1.7">
+        💡 <strong style="color:var(--text-b)">Czym jest Bonus DOŚ?</strong> To bonus który daje <strong style="color:var(--gold-l)">+30% doświadczenia</strong> za zabicie potwora (stała wartość). Procent oznacza <em>szansę</em> na otrzymanie tego bonusu — nie mnożnik. Przykład: mając <strong style="color:var(--gold-l)">60% szansy</strong>, średnio za każde 1.7 potwora dostaniesz +30% exp.
+      </div>
+
       <div class="grid-2">
-        <div class="card fade-up" style="animation-delay:.1s">
-          <div style="display:flex;gap:1.2rem;align-items:flex-start">
-            <div style="font-family:'Cinzel',serif;font-size:2rem;font-weight:900;color:var(--gold-dim);line-height:1">01</div>
-            <div><div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--text-bright);margin-bottom:.3rem">Zarejestruj konto</div><div style="color:var(--text-muted);font-size:.9rem">Stwórz darmowe konto w 30 sekund.</div></div>
+        <div class="card" style="border-color:var(--gold-d)">
+          <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--gold-l);margin-bottom:.8rem">👑 Pełny Set</div>
+          <div style="color:var(--text-b);margin-bottom:.3rem">Buty + Tarcza + Naszyjnik</div>
+          <div style="color:var(--gold-l);font-size:1.1rem;font-family:'Cinzel',serif;margin-bottom:.3rem">60% szansy na Bonus DOŚ</div>
+          <div style="color:var(--text-m);font-size:.85rem;margin-bottom:1rem">Średnio co 1.7 potwora dostajesz +30% exp</div>
+          <div style="border-top:1px solid var(--border);padding-top:.8rem;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-family:'Cinzel',serif;color:var(--gold-l)">500 SM/h</div>
+              <div style="font-size:.78rem;color:var(--text-m)">Zastaw: 30 000 SM (zwrotny)</div>
+            </div>
+            <a href="/slots" class="btn btn-outline btn-sm">Zarezerwuj</a>
           </div>
         </div>
-        <div class="card fade-up" style="animation-delay:.2s">
-          <div style="display:flex;gap:1.2rem;align-items:flex-start">
-            <div style="font-family:'Cinzel',serif;font-size:2rem;font-weight:900;color:var(--gold-dim);line-height:1">02</div>
-            <div><div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--text-bright);margin-bottom:.3rem">Wybierz termin</div><div style="color:var(--text-muted);font-size:.9rem">Przeglądaj dostępne sloty dodane przez ekipę.</div></div>
-          </div>
-        </div>
-        <div class="card fade-up" style="animation-delay:.3s">
-          <div style="display:flex;gap:1.2rem;align-items:flex-start">
-            <div style="font-family:'Cinzel',serif;font-size:2rem;font-weight:900;color:var(--gold-dim);line-height:1">03</div>
-            <div><div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--text-bright);margin-bottom:.3rem">Podaj dane postaci</div><div style="color:var(--text-muted);font-size:.9rem">Nazwa postaci, klasa, poziom i nick Discord.</div></div>
-          </div>
-        </div>
-        <div class="card fade-up" style="animation-delay:.4s">
-          <div style="display:flex;gap:1.2rem;align-items:flex-start">
-            <div style="font-family:'Cinzel',serif;font-size:2rem;font-weight:900;color:var(--gold-dim);line-height:1">04</div>
-            <div><div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--text-bright);margin-bottom:.3rem">Gotowe!</div><div style="color:var(--text-muted);font-size:.9rem">Ekipa potwierdzi przez Discord. Link statusu dostaniesz od razu.</div></div>
+        <div class="card">
+          <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--text-b);margin-bottom:.8rem">⚡ Naszyjnik + Buty</div>
+          <div style="color:var(--text-b);margin-bottom:.3rem">Naszyjnik + Buty (bez tarczy)</div>
+          <div style="color:var(--gold-l);font-size:1.1rem;font-family:'Cinzel',serif;margin-bottom:.3rem">40% szansy na Bonus DOŚ</div>
+          <div style="color:var(--text-m);font-size:.85rem;margin-bottom:1rem">Średnio co 2.5 potwora dostajesz +30% exp</div>
+          <div style="border-top:1px solid var(--border);padding-top:.8rem;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-family:'Cinzel',serif;color:var(--gold-l)">300 SM/h</div>
+              <div style="font-size:.78rem;color:var(--text-m)">Zastaw: 10 000 SM (zwrotny)</div>
+            </div>
+            <a href="/slots" class="btn btn-outline btn-sm">Zarezerwuj</a>
           </div>
         </div>
       </div>
     </div>
   </section>
 
+  <!-- HOW IT WORKS -->
   <section class="section">
-    <div class="container">
+    <div class="wrap">
+      <h2 class="section-title">Jak to <span>Działa?</span></h2>
+      <p class="section-sub">Rezerwacja w 30 sekund — bez rejestracji konta</p>
+      <div class="grid-2">
+        <div class="card fade-up" style="animation-delay:.05s">
+          <div style="display:flex;gap:1rem;align-items:flex-start">
+            <div style="font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:var(--gold-d);line-height:1">01</div>
+            <div><div style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--text-b);margin-bottom:.25rem">Wybierz wolny termin</div><div style="color:var(--text-m);font-size:.88rem">Przeglądaj dostępne sloty dodane przez ekipę.</div></div>
+          </div>
+        </div>
+        <div class="card fade-up" style="animation-delay:.1s">
+          <div style="display:flex;gap:1rem;align-items:flex-start">
+            <div style="font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:var(--gold-d);line-height:1">02</div>
+            <div><div style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--text-b);margin-bottom:.25rem">Wybierz pakiet</div><div style="color:var(--text-m);font-size:.88rem">Solo, Duo lub Trio — pierwszy gracz ustawia typ.</div></div>
+          </div>
+        </div>
+        <div class="card fade-up" style="animation-delay:.15s">
+          <div style="display:flex;gap:1rem;align-items:flex-start">
+            <div style="font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:var(--gold-d);line-height:1">03</div>
+            <div><div style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--text-b);margin-bottom:.25rem">Wpisz 3 rzeczy</div><div style="color:var(--text-m);font-size:.88rem">Nazwa postaci, poziom i nick Discord. Gotowe.</div></div>
+          </div>
+        </div>
+        <div class="card fade-up" style="animation-delay:.2s">
+          <div style="display:flex;gap:1rem;align-items:flex-start">
+            <div style="font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:var(--gold-d);line-height:1">04</div>
+            <div><div style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--text-b);margin-bottom:.25rem">Ekipa potwierdza</div><div style="color:var(--text-m);font-size:.88rem">Dostajesz link do śledzenia statusu. Godzina jest orientacyjna ±15 min.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section class="section">
+    <div class="wrap">
       <h2 class="section-title">Opinie <span>Graczy</span></h2>
       <p class="section-sub">Co mówią gracze którzy korzystali z naszych usług</p>
       <div id="reviewsList"><div class="spinner"></div></div>
     </div>
   </section>
 </main>
-<footer><p>⚔️ <strong style="color:var(--gold-light)">Patologiczne Expowisko</strong> — Metin2 Leveling dla Chunjo · Nie jesteśmy oficjalną stroną serwera Projekt Hard.</p></footer>
-<script src="/js/nav.js"></script>
+<footer><p>⚔️ <strong style="color:var(--gold-l)">Patologiczne Expowisko</strong> — Metin2 Leveling dla Chunjo · Nie jesteśmy oficjalną stroną serwera Projekt Hard.</p></footer>
+<script src="/js/app.js"></script>
 <script>
-  initNav().then(d => {
-    if(d.loggedIn) { const r=document.getElementById('heroRegister'); if(r) r.style.display='none'; }
-  });
-
   fetch('/api/slots').then(r=>r.json()).then(slots=>{
-    document.getElementById('statSlots').textContent = slots.filter(s=>s.spots_left>0).length;
+    const free = slots.filter(s=>!s.package_type||(s.spots_left&&s.spots_left>0)).length;
+    document.getElementById('statSlots').textContent = free || '—';
   });
 
   fetch('/api/reviews').then(r=>r.json()).then(reviews=>{
-    const el=document.getElementById('reviewsList');
-    if(!reviews.length){el.innerHTML='<p style="text-align:center;color:var(--text-muted);font-style:italic">Brak opinii. Bądź pierwszy!</p>';return;}
-    const avg=reviews.reduce((a,r)=>a+r.rating,0)/reviews.length;
-    document.getElementById('statRating').textContent=avg.toFixed(1)+' ⭐';
-    el.innerHTML=`<div class="grid-2">${reviews.slice(0,4).map(r=>`
+    const el = document.getElementById('reviewsList');
+    if(!reviews.length){ el.innerHTML='<p style="text-align:center;color:var(--text-m);font-style:italic">Brak opinii. Bądź pierwszy!</p>'; return; }
+    const avg = reviews.reduce((a,r)=>a+r.rating,0)/reviews.length;
+    document.getElementById('statRating').textContent = avg.toFixed(1)+' ⭐';
+    el.innerHTML = `<div class="grid-2">${reviews.slice(0,4).map(r=>`
       <div class="review-card">
-        <div style="color:var(--gold-light);margin-bottom:.4rem">${'⭐'.repeat(r.rating)}</div>
-        <div style="color:var(--text);margin-bottom:.4rem">"${r.comment||'Brak komentarza'}"</div>
-        <div style="color:var(--text-muted);font-size:.8rem">— ${r.username} · ${r.package_name}</div>
+        <div style="color:var(--gold-l);margin-bottom:.3rem">${'⭐'.repeat(r.rating)}</div>
+        <div style="color:var(--text);margin-bottom:.3rem">"${r.comment||'Brak komentarza'}"</div>
+        <div style="color:var(--text-m);font-size:.78rem">— ${r.reviewer_name} · ${PKG[r.package_type]?.name||''}</div>
       </div>`).join('')}</div>`;
   });
 </script>

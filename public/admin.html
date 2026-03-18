@@ -2,169 +2,160 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Admina — Patologiczne Expowisko</title>
+  <title>Panel Ekipy — Patologiczne Expowisko</title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
-    .slot-admin-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:.8rem;position:relative;overflow:hidden;}
-    .slot-admin-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4;}
-    .slot-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;margin-bottom:.8rem;}
-    .slot-title{font-family:'Cinzel',serif;font-size:1rem;color:var(--text-bright);}
-    .booking-row{background:#0a0e1a;border-radius:4px;padding:.5rem .8rem;margin-bottom:.3rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;font-size:.85rem;}
-    .actions{display:flex;gap:.4rem;flex-wrap:wrap;}
+    .gen-form{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:1.3rem;margin-bottom:1.3rem;}
+    .gen-title{font-family:'Cinzel',serif;font-size:.95rem;color:var(--text-b);margin-bottom:1rem;}
+    .actions{display:flex;gap:.35rem;flex-wrap:wrap;}
+    .booking-row{background:#0a0e1a;border-radius:4px;padding:.42rem .7rem;margin-bottom:.28rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.35rem;font-size:.82rem;}
   </style>
 </head>
 <body>
 <div class="chunjo-banner">
-  <span class="chunjo-flag"><svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg></span>
-  <strong style="color:var(--gold-light);letter-spacing:.2em">CHUNJO</strong> — Patologiczne Expowisko
+  <span class="flag"><svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg></span>
+  <strong style="color:var(--gold-l);letter-spacing:.2em">CHUNJO</strong> — Panel Ekipy
 </div>
 <nav>
   <a class="nav-logo" href="/">⚔️ Patologiczne <span>Expowisko</span></a>
   <div class="nav-links">
-    <a href="/">Strona główna</a><a href="/slots">📅 Terminy</a>
-    <a href="/dashboard">Moje rez.</a><a href="/admin" class="active">Admin</a>
-    <span id="navUser" style="color:var(--gold-light);font-family:'Cinzel',serif;font-size:.8rem"></span>
-    <form action="/logout" method="post"><button class="btn btn-outline btn-sm">Wyloguj</button></form>
+    <a href="/">Strona</a><a href="/slots">Terminy</a><a href="/admin" class="active">Panel</a>
+    <span id="adminName" style="color:var(--gold-l);font-family:'Cinzel',serif;font-size:.75rem"></span>
+    <button class="btn btn-outline btn-sm" onclick="logout()">Wyloguj</button>
   </div>
 </nav>
 <main>
-<div class="page-wrap" style="max-width:1100px">
-  <h1 class="page-title" style="margin-bottom:1.5rem">Panel <span>Administratora</span></h1>
+<div class="page-wrap" style="max-width:1060px">
+  <h1 style="font-family:'Cinzel',serif;font-size:1.6rem;font-weight:900;color:var(--text-b);margin-bottom:1.3rem">Panel <span style="color:var(--gold-l)">Ekipy</span></h1>
 
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="showTab('slots',this)">📅 Sloty</button>
+    <button class="tab-btn active" onclick="showTab('slots',this)">📅 Moje Sloty</button>
     <button class="tab-btn" onclick="showTab('bookings',this)">📋 Rezerwacje</button>
     <button class="tab-btn" onclick="showTab('stats',this)">📊 Statystyki</button>
-    <button class="tab-btn" onclick="showTab('coupons',this)">🏷️ Kupony</button>
-    <button class="tab-btn" onclick="showTab('chat',this)">💬 Czaty</button>
   </div>
 
   <!-- SLOTS TAB -->
-  <div id="tab-slots" class="tab-content active">
-    <div class="card" style="margin-bottom:1.5rem">
-      <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--text-bright);margin-bottom:1rem">➕ Dodaj nowy slot</div>
+  <div id="tab-slots" class="tab active">
+    <div class="gen-form">
+      <div class="gen-title">➕ Dodaj dostępność — sloty generują się co godzinę</div>
       <div class="grid-2">
-        <div class="form-group"><label class="form-label">Data *</label><input type="date" id="newDate" class="form-control" min=""></div>
-        <div class="form-group"><label class="form-label">Godzina *</label><input type="time" id="newTime" class="form-control"></div>
-        <div class="form-group"><label class="form-label">Nazwa pakietu *</label><input type="text" id="newName" class="form-control" placeholder="np. Expienie Solo"></div>
-        <div class="form-group"><label class="form-label">Typ *</label>
-          <select id="newType" class="form-control">
-            <option value="solo">🗡️ Solo (1 osoba)</option>
-            <option value="duo">⚔️ Duo (2 osoby)</option>
-            <option value="trio">🔱 Trio (3 osoby)</option>
-          </select>
+        <div class="form-group"><label class="form-label">Data *</label><input type="date" id="gDate" class="form-control"></div>
+        <div class="form-group">
+          <label class="form-label">Uwagi (opcjonalne)</label>
+          <input type="text" id="gNote" class="form-control" placeholder="np. Wymagany eqp +6">
         </div>
-        <div class="form-group"><label class="form-label">Limit miejsc *</label><input type="number" id="newMax" class="form-control" min="1" max="3" value="1"></div>
-        <div class="form-group"><label class="form-label">Cena SM/h *</label><input type="number" id="newPrice" class="form-control" min="100" placeholder="5000"></div>
+        <div class="form-group"><label class="form-label">Godzina od *</label><input type="time" id="gFrom" class="form-control" value="09:00"></div>
+        <div class="form-group"><label class="form-label">Godzina do *</label><input type="time" id="gTo" class="form-control" value="17:00"></div>
       </div>
-      <div class="form-group"><label class="form-label">Uwagi (opcjonalne)</label><input type="text" id="newNote" class="form-control" placeholder="np. Wymagany eqp +6"></div>
-      <button class="btn btn-gold" onclick="createSlot()">+ Dodaj slot</button>
-      <div id="slotAlert" style="margin-top:.8rem"></div>
+      <div id="previewSlots" style="margin-bottom:1rem;display:none">
+        <div style="font-family:'Cinzel',serif;font-size:.68rem;color:var(--text-m);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.4rem">Podgląd slotów do wygenerowania:</div>
+        <div id="previewList" style="display:flex;flex-wrap:wrap;gap:.35rem"></div>
+      </div>
+      <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="previewSlots()">👁️ Podgląd</button>
+        <button class="btn btn-gold" onclick="generateSlots()">⚡ Generuj sloty</button>
+        <span id="genResult" style="font-size:.85rem;color:var(--green)"></span>
+      </div>
     </div>
 
     <div class="filter-bar">
       <button class="filter-btn active" onclick="filterSlots('all',this)">Wszystkie</button>
       <button class="filter-btn" onclick="filterSlots('upcoming',this)">Nadchodzące</button>
-      <button class="filter-btn" onclick="filterSlots('open',this)">Otwarte</button>
-      <button class="filter-btn" onclick="filterSlots('full',this)">Pełne</button>
+      <button class="filter-btn" onclick="filterSlots('mine',this)">Moje</button>
     </div>
-    <div id="slotsAdminList"><div class="spinner"></div></div>
+    <div id="slotsList"><div class="spinner"></div></div>
   </div>
 
   <!-- BOOKINGS TAB -->
-  <div id="tab-bookings" class="tab-content">
+  <div id="tab-bookings" class="tab">
     <div class="filter-bar">
       <button class="filter-btn active" onclick="filterBookings('all',this)">Wszystkie</button>
       <button class="filter-btn" onclick="filterBookings('pending',this)">Oczekujące</button>
       <button class="filter-btn" onclick="filterBookings('active',this)">Potwierdzone</button>
       <button class="filter-btn" onclick="filterBookings('done',this)">Ukończone</button>
-      <button class="filter-btn" onclick="filterBookings('rejected',this)">Odrzucone</button>
     </div>
     <div class="card">
       <div class="table-wrap">
         <table>
-          <thead><tr><th>#</th><th>Slot</th><th>Gracz</th><th>Postać</th><th>Discord</th><th>Status</th><th>Akcje</th></tr></thead>
-          <tbody id="bookingsBody"><tr><td colspan="7"><div class="spinner"></div></td></tr></tbody>
+          <thead><tr><th>#</th><th>Slot</th><th>Postać</th><th>Discord</th><th>Pakiet</th><th>Eqp</th><th>Status</th><th>Akcje</th></tr></thead>
+          <tbody id="bookingsBody"><tr><td colspan="8"><div class="spinner"></div></td></tr></tbody>
         </table>
       </div>
     </div>
   </div>
 
   <!-- STATS TAB -->
-  <div id="tab-stats" class="tab-content">
+  <div id="tab-stats" class="tab">
     <div id="statsContent"><div class="spinner"></div></div>
-  </div>
-
-  <!-- COUPONS TAB -->
-  <div id="tab-coupons" class="tab-content">
-    <div class="card" style="margin-bottom:1.5rem">
-      <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--text-bright);margin-bottom:1rem">Nowy kupon</div>
-      <div class="grid-2">
-        <div class="form-group"><label class="form-label">Kod *</label><input type="text" id="cCode" class="form-control" placeholder="PROMO20" style="text-transform:uppercase"></div>
-        <div class="form-group"><label class="form-label">Rabat % *</label><input type="number" id="cDiscount" class="form-control" min="1" max="100" placeholder="20"></div>
-        <div class="form-group"><label class="form-label">Maks. użyć</label><input type="number" id="cMaxUses" class="form-control" value="1" min="1"></div>
-        <div class="form-group"><label class="form-label">Wygasa</label><input type="date" id="cExpires" class="form-control"></div>
-      </div>
-      <button class="btn btn-gold" onclick="createCoupon()">+ Utwórz kupon</button>
-      <div id="couponAlert" style="margin-top:.8rem"></div>
-    </div>
-    <div class="card">
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Kod</th><th>Rabat</th><th>Użycia</th><th>Wygasa</th><th>Akcje</th></tr></thead>
-          <tbody id="couponsBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- CHAT TAB -->
-  <div id="tab-chat" class="tab-content">
-    <div id="chatList"><div class="spinner"></div></div>
-    <div id="chatAdminBox" style="display:none;margin-top:1.5rem">
-      <div style="font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold-light);margin-bottom:.8rem" id="chatAdminTitle"></div>
-      <div class="chat-box">
-        <div class="chat-messages" id="adminChatMessages"></div>
-      </div>
-      <div class="chat-input-row">
-        <input type="text" id="adminChatInput" class="chat-input" placeholder="Odpowiedz klientowi..." onkeydown="if(event.key==='Enter')sendAdminMsg()">
-        <button class="btn btn-gold btn-sm" onclick="sendAdminMsg()">Wyślij</button>
-      </div>
-    </div>
   </div>
 </div>
 </main>
-
-<footer><p>⚔️ <strong style="color:var(--gold-light)">Patologiczne Expowisko</strong> — Panel Administratora</p></footer>
-<script src="/js/nav.js"></script>
+<footer><p>⚔️ <strong style="color:var(--gold-l)">Patologiczne Expowisko</strong> — Panel Ekipy</p></footer>
+<script src="/js/app.js"></script>
 <script>
-let allSlots=[], allBookings=[], slotFilter='all', bookingFilter='all';
-let adminChatBookingId=null, adminChatWs=null, myUserId=null;
+let allSlots=[], allBookings=[], slotFilter='all', bookingFilter='all', myAdminId=null;
 
-// Set min date to today
-document.getElementById('newDate').min = new Date().toISOString().split('T')[0];
+// Set min date
+document.getElementById('gDate').min=new Date().toISOString().split('T')[0];
+document.getElementById('gDate').value=new Date().toISOString().split('T')[0];
 
-// Auto-set max players based on type
-document.getElementById('newType').addEventListener('change', function(){
-  const map={solo:1,duo:2,trio:3};
-  document.getElementById('newMax').value=map[this.value]||1;
-});
-
-initNav().then(data=>{
-  if(!data.loggedIn||data.role!=='admin'){location.href='/';return;}
-  myUserId=data.userId;
+// Check auth
+fetch('/api/admin/session').then(r=>r.json()).then(data=>{
+  if(!data.loggedIn){location.href='/admin/login';return;}
+  document.getElementById('adminName').textContent='👤 '+data.name;
   loadSlots();
 });
 
+async function logout(){
+  await fetch('/api/admin/logout',{method:'POST'});
+  location.href='/admin/login';
+}
+
 function showTab(tab,btn){
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   btn.classList.add('active');
   if(tab==='stats') loadStats();
-  if(tab==='coupons') loadCoupons();
   if(tab==='bookings') loadBookings();
-  if(tab==='chat') loadChatList();
+}
+
+// GENERATE SLOTS
+function previewSlots(){
+  const date=document.getElementById('gDate').value;
+  const from=document.getElementById('gFrom').value;
+  const to=document.getElementById('gTo').value;
+  if(!date||!from||!to) return;
+  const [fh,fm]=from.split(':').map(Number);
+  const [th,tm]=to.split(':').map(Number);
+  const times=[];
+  for(let t=fh*60+fm;t<th*60+tm;t+=60){
+    times.push(String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0'));
+  }
+  const preview=document.getElementById('previewSlots');
+  const list=document.getElementById('previewList');
+  preview.style.display='';
+  list.innerHTML=times.map(t=>`<span style="background:#0a0e1a;border:1px solid var(--border);border-radius:4px;padding:.2rem .6rem;font-family:'Cinzel',serif;font-size:.75rem;color:var(--gold-l)">${t}</span>`).join('');
+}
+
+async function generateSlots(){
+  const date=document.getElementById('gDate').value;
+  const from=document.getElementById('gFrom').value;
+  const to=document.getElementById('gTo').value;
+  const note=document.getElementById('gNote').value;
+  const res=await fetch('/api/admin/slots/generate',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({date,time_from:from,time_to:to,note})
+  }).then(r=>r.json());
+  const el=document.getElementById('genResult');
+  if(res.success){
+    el.textContent=`✅ Dodano ${res.created} slotów (z ${res.total} godzin)`;
+    loadSlots();
+    setTimeout(()=>el.textContent='',4000);
+  } else {
+    el.style.color='var(--red)';
+    el.textContent='❌ '+res.error;
+    setTimeout(()=>{el.textContent='';el.style.color='var(--green)';},4000);
+  }
 }
 
 // SLOTS
@@ -182,80 +173,58 @@ function filterSlots(f,btn){
 
 function renderSlots(){
   const today=new Date().toISOString().split('T')[0];
-  let filtered=allSlots;
-  if(slotFilter==='upcoming') filtered=allSlots.filter(s=>s.date>=today&&s.status==='open');
-  else if(slotFilter==='open') filtered=allSlots.filter(s=>s.spots_left>0&&s.status==='open');
-  else if(slotFilter==='full') filtered=allSlots.filter(s=>s.spots_left<=0);
+  let list=allSlots;
+  if(slotFilter==='upcoming') list=allSlots.filter(s=>s.date>=today&&s.status==='open');
+  else if(slotFilter==='mine') list=allSlots.filter(s=>s.status!=='deleted');
 
-  const el=document.getElementById('slotsAdminList');
-  if(!filtered.length){el.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem">Brak slotów.</p>';return;}
+  const el=document.getElementById('slotsList');
+  if(!list.length){el.innerHTML='<p style="color:var(--text-m);text-align:center;padding:2rem">Brak slotów.</p>';return;}
 
-  el.innerHTML=filtered.map(s=>{
-    const icon=PKG_ICONS[s.package_type]||'⚔️';
-    const bookingsHtml=s.bookings.length?s.bookings.map(b=>`
-      <div class="booking-row">
-        <div>
-          <strong style="color:var(--text-bright)">${b.username}</strong>
-          — ${b.char_name} (${b.char_class} poz.${b.char_level})
-          ${b.contact_discord?`<span style="color:var(--gold-dim)"> 💬 ${b.contact_discord}</span>`:''}
-        </div>
-        <div style="display:flex;gap:.3rem;align-items:center">
-          <span class="badge ${STATUS_BADGES[b.status]||'badge-pending'}">${STATUS_LABELS[b.status]||b.status}</span>
-          ${b.status==='pending'?`<button class="btn btn-xs" style="background:#003020;color:#40d090;border:1px solid #006040" onclick="updateBooking(${b.id},'active')">✓</button><button class="btn btn-xs btn-danger" onclick="updateBooking(${b.id},'rejected')">✕</button>`:''}
-          ${b.status==='active'?`<button class="btn btn-xs" style="background:#001530;color:#4080f0;border:1px solid #003080" onclick="updateBooking(${b.id},'done')">Ukończ</button>`:''}
-          <button class="btn btn-xs btn-outline" onclick="openAdminChat(${b.id},'${b.username}')">💬</button>
-        </div>
-      </div>`).join(''):'<div style="color:var(--text-muted);font-size:.85rem;font-style:italic">Brak rezerwacji</div>';
+  // Group by date
+  const byDate={};
+  list.forEach(s=>(byDate[s.date]=byDate[s.date]||[]).push(s));
 
-    return `<div class="slot-admin-card">
-      <div class="slot-header">
-        <div>
-          <div class="slot-title">${icon} ${s.package_name} · ${s.date} o ${s.time}</div>
-          <div style="color:var(--text-muted);font-size:.8rem;margin-top:.2rem">${s.booked_count}/${s.max_players} miejsc zajętych · ${s.price_sm?.toLocaleString()} SM/h${s.note?' · 📝 '+s.note:''}</div>
-        </div>
-        <div class="actions">
-          <span class="badge ${s.spots_left>0?'badge-open':'badge-full'}">${s.spots_left>0?s.spots_left+' wolne':'Pełny'}</span>
-          ${s.status==='open'?`<button class="btn btn-xs btn-outline" onclick="closeSlot(${s.id})">Zamknij</button>`:''}
-          <button class="btn btn-xs btn-danger" onclick="deleteSlot(${s.id})">🗑️</button>
-        </div>
-      </div>
-      <div>${bookingsHtml}</div>
-    </div>`;
-  }).join('');
-}
+  el.innerHTML=Object.entries(byDate).map(([date,daySlots])=>`
+    <div style="margin-bottom:1.5rem">
+      <div style="font-family:'Cinzel',serif;font-size:.75rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;padding:.4rem 0;border-bottom:1px solid var(--border);margin-bottom:.7rem">📅 ${formatDate(date)}</div>
+      ${daySlots.map(s=>{
+        const pkg=s.package_type?PKG[s.package_type]:null;
+        const bookingsHtml=s.bookings.length?s.bookings.map(b=>`
+          <div class="booking-row">
+            <div>
+              <strong style="color:var(--text-b)">${b.char_name}</strong> (${b.char_class} poz.${b.char_level})
+              <span style="color:var(--gold-d);margin-left:.4rem">💬 ${b.contact_discord}</span>
+              ${b.equipment_rental!=='none'?`<span style="color:var(--gold-l);margin-left:.4rem">🎯 ${EQ[b.equipment_rental]?.name}</span>`:''}
+              ${b.looking_for_party?'<span class="party-badge" style="margin-left:.4rem;font-size:.62rem">Szuka party</span>':''}
+            </div>
+            <div style="display:flex;gap:.3rem;align-items:center">
+              ${badge(b.status)}
+              ${b.status==='pending'?`<button class="btn btn-xs" style="background:#003020;color:var(--green);border:1px solid #006040" onclick="updateBooking(${b.id},'active')">✓</button><button class="btn btn-xs btn-danger" onclick="updateBooking(${b.id},'rejected')">✕</button>`:''}
+              ${b.status==='active'?`<button class="btn btn-xs" style="background:#001530;color:var(--blue);border:1px solid #003080" onclick="updateBooking(${b.id},'done')">Ukończ</button>`:''}
+            </div>
+          </div>`).join(''):'<div style="color:var(--text-m);font-size:.82rem;font-style:italic">Brak rezerwacji</div>';
 
-async function createSlot(){
-  const date=document.getElementById('newDate').value;
-  const time=document.getElementById('newTime').value;
-  const name=document.getElementById('newName').value.trim();
-  const type=document.getElementById('newType').value;
-  const max=document.getElementById('newMax').value;
-  const price=document.getElementById('newPrice').value;
-  const note=document.getElementById('newNote').value.trim();
-  const al=document.getElementById('slotAlert');
-  if(!date||!time||!name||!type||!max||!price){al.innerHTML='<div class="alert alert-error">Wypełnij wszystkie wymagane pola.</div>';return;}
-  const res=await fetch('/api/admin/slots',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({date,time,package_name:name,package_type:type,max_players:max,price_sm:price,note})
-  }).then(r=>r.json());
-  if(res.success){
-    al.innerHTML='<div class="alert alert-success">Slot dodany!</div>';
-    ['newDate','newTime','newName','newNote','newPrice'].forEach(id=>{document.getElementById(id).value='';});
-    document.getElementById('newType').value='solo';
-    document.getElementById('newMax').value='1';
-    loadSlots();
-    setTimeout(()=>al.innerHTML='',3000);
-  } else {
-    al.innerHTML=`<div class="alert alert-error">${res.error}</div>`;
-  }
-}
-
-async function closeSlot(id){
-  await fetch(`/api/admin/slots/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'closed'})});
-  loadSlots();
+        return `<div class="slot-admin" style="${s.status==='deleted'?'opacity:.4':''}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem">
+            <div>
+              <span style="font-family:'Cinzel',serif;font-size:1rem;color:var(--text-b)">${s.time}</span>
+              <span style="color:var(--text-m);font-size:.8rem;margin-left:.5rem">±15 min · ${s.admin_name}</span>
+              ${pkg?`<span style="margin-left:.5rem">${pkg.icon} ${pkg.name} · ${s.booked_count}/${s.max_players}</span>`:'<span style="color:var(--text-m);font-size:.78rem;margin-left:.5rem">Wolny — czeka na pierwszego gracza</span>'}
+              ${s.note?`<span style="color:var(--text-m);font-size:.75rem;margin-left:.5rem">📝 ${s.note}</span>`:''}
+            </div>
+            <div class="actions">
+              <span class="badge ${s.spots_left===null||s.spots_left>0?'b-open':'b-full'}">${s.spots_left===null?'Wolny':s.spots_left>0?s.spots_left+' wolne':'Pełny'}</span>
+              ${s.status!=='deleted'?`<button class="btn btn-xs btn-danger" onclick="deleteSlot(${s.id})" title="Usuń slot">🗑️</button>`:''}
+            </div>
+          </div>
+          ${bookingsHtml}
+        </div>`;
+      }).join('')}
+    </div>`).join('');
 }
 
 async function deleteSlot(id){
-  if(!confirm('Usunąć ten slot? Gracze zostaną powiadomieni.')) return;
+  if(!confirm('Usunąć ten slot?')) return;
   await fetch(`/api/admin/slots/${id}`,{method:'DELETE'});
   loadSlots();
 }
@@ -276,40 +245,40 @@ function filterBookings(f,btn){
 function renderBookings(){
   const filtered=bookingFilter==='all'?allBookings:allBookings.filter(b=>b.status===bookingFilter);
   const tbody=document.getElementById('bookingsBody');
-  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem">Brak rezerwacji.</td></tr>`;return;}
-  tbody.innerHTML=filtered.map(b=>`
-    <tr>
-      <td style="color:var(--text-muted)">#${b.id}</td>
-      <td>
-        <div style="color:var(--text-bright)">${PKG_ICONS[b.package_type]||''} ${b.package_name}</div>
-        <div style="font-size:.75rem;color:var(--text-muted)">${b.date} o ${b.time}</div>
-      </td>
-      <td><strong style="color:var(--text-bright)">${b.username}</strong></td>
-      <td>${b.char_name} (${b.char_class} poz.${b.char_level})</td>
-      <td style="color:var(--gold-dim)">${b.contact_discord}</td>
-      <td><span class="badge ${STATUS_BADGES[b.status]}">${STATUS_LABELS[b.status]}</span></td>
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="8" style="text-align:center;color:var(--text-m);padding:1.5rem">Brak rezerwacji.</td></tr>`;return;}
+  tbody.innerHTML=filtered.map(b=>{
+    const pkg=PKG[b.package_type]||{icon:'',name:b.package_type};
+    const eq=EQ[b.equipment_rental]||EQ.none;
+    return `<tr>
+      <td style="color:var(--text-m)">#${b.id}</td>
+      <td><div style="color:var(--text-b)">${b.date}</div><div style="color:var(--text-m);font-size:.78rem">${b.time} ±15 min</div></td>
+      <td>${b.char_name}<div style="color:var(--text-m);font-size:.78rem">${b.char_class} poz.${b.char_level}</div></td>
+      <td style="color:var(--gold-d)">${b.contact_discord}</td>
+      <td>${pkg.icon} ${pkg.name}<div style="color:var(--text-m);font-size:.75rem">${(pkg.price||0).toLocaleString()} SM/h</div></td>
+      <td>${b.equipment_rental!=='none'?`<span style="color:var(--gold-l);font-size:.78rem">${eq.name}</span>`:'<span style="color:var(--text-m);font-size:.78rem">Brak</span>'}</td>
+      <td>${badge(b.status)}</td>
       <td>
         <div class="actions">
-          ${b.status==='pending'?`<button class="btn btn-xs" style="background:#003020;color:#40d090;border:1px solid #006040" onclick="updateBooking(${b.id},'active')">Przyjmij</button><button class="btn btn-xs btn-danger" onclick="updateBooking(${b.id},'rejected')">Odrzuć</button>`:''}
-          ${b.status==='active'?`<button class="btn btn-xs" style="background:#001530;color:#4080f0;border:1px solid #003080" onclick="updateBooking(${b.id},'done')">Ukończ</button>`:''}
-          <button class="btn btn-xs btn-outline" onclick="openAdminChat(${b.id},'${b.username}')">💬</button>
+          ${b.status==='pending'?`<button class="btn btn-xs" style="background:#003020;color:var(--green);border:1px solid #006040" onclick="updateBooking(${b.id},'active')">Przyjmij</button><button class="btn btn-xs btn-danger" onclick="updateBooking(${b.id},'rejected')">Odrzuć</button>`:''}
+          ${b.status==='active'?`<button class="btn btn-xs" style="background:#001530;color:var(--blue);border:1px solid #003080" onclick="updateBooking(${b.id},'done')">Ukończ</button>`:''}
           <button class="btn btn-xs btn-danger" onclick="deleteBooking(${b.id})">🗑️</button>
         </div>
       </td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 }
 
 async function updateBooking(id,status){
   await fetch(`/api/admin/bookings/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});
   loadSlots();
-  if(document.getElementById('tab-bookings').classList.contains('active')) loadBookings();
+  if(!document.getElementById('tab-bookings').classList.contains('active')) return;
+  loadBookings();
 }
 
 async function deleteBooking(id){
-  if(!confirm('Usunąć tę rezerwację?')) return;
+  if(!confirm('Usunąć rezerwację?')) return;
   await fetch(`/api/admin/bookings/${id}`,{method:'DELETE'});
-  loadSlots();
-  loadBookings();
+  loadSlots(); loadBookings();
 }
 
 // STATS
@@ -317,112 +286,38 @@ async function loadStats(){
   const s=await fetch('/api/admin/stats').then(r=>r.json());
   const maxCount=Math.max(...(s.byMonth||[]).map(m=>m.count),1);
   document.getElementById('statsContent').innerHTML=`
-    <div class="grid-4" style="margin-bottom:1.5rem">
-      <div class="stat-card"><div class="stat-card-value">${s.totalSlots}</div><div class="stat-card-label">Wszystkich slotów</div></div>
-      <div class="stat-card"><div class="stat-card-value">${s.totalBookings}</div><div class="stat-card-label">Rezerwacji</div></div>
-      <div class="stat-card"><div class="stat-card-value">${s.doneBookings}</div><div class="stat-card-label">Ukończonych</div></div>
-      <div class="stat-card"><div class="stat-card-value">${s.totalUsers}</div><div class="stat-card-label">Użytkowników</div></div>
+    <div class="grid-4" style="margin-bottom:1.3rem">
+      <div class="stat-card"><div class="stat-card-v">${s.totalSlots}</div><div class="stat-card-l">Slotów</div></div>
+      <div class="stat-card"><div class="stat-card-v">${s.totalBookings}</div><div class="stat-card-l">Rezerwacji</div></div>
+      <div class="stat-card"><div class="stat-card-v">${s.doneBookings}</div><div class="stat-card-l">Ukończonych</div></div>
+      <div class="stat-card"><div class="stat-card-v">${s.avgRating>0?s.avgRating+' ⭐':'—'}</div><div class="stat-card-l">Śr. ocena (${s.totalReviews})</div></div>
     </div>
     <div class="grid-2">
       <div class="card">
-        <div style="font-family:'Cinzel',serif;font-size:.8rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1rem">Wg pakietu (ukończone)</div>
+        <div style="font-family:'Cinzel',serif;font-size:.75rem;color:var(--text-m);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.8rem">Wg pakietu (ukończone)</div>
         ${(s.byPackage||[]).map(p=>`
-          <div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border)">
-            <span>${PKG_ICONS[p.package_type]||''} ${p.package_name}</span>
-            <span style="color:var(--gold-light);font-family:'Cinzel',serif">${p.count}</span>
-          </div>`).join('')||'<p style="color:var(--text-muted)">Brak danych</p>'}
+          <div style="display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid var(--border)">
+            <span>${PKG[p.package_type]?.icon||''} ${PKG[p.package_type]?.name||p.package_type}</span>
+            <span style="color:var(--gold-l);font-family:'Cinzel',serif">${p.count}</span>
+          </div>`).join('')||'<p style="color:var(--text-m)">Brak danych</p>'}
+        <div style="font-family:'Cinzel',serif;font-size:.75rem;color:var(--text-m);letter-spacing:.08em;text-transform:uppercase;margin-top:1rem;margin-bottom:.5rem">Wynajem eqp</div>
+        ${(s.eqStats||[]).map(e=>`
+          <div style="display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid var(--border)">
+            <span style="font-size:.85rem">${EQ[e.equipment_rental]?.name||e.equipment_rental}</span>
+            <span style="color:var(--gold-l);font-family:'Cinzel',serif">${e.count}×</span>
+          </div>`).join('')||'<p style="color:var(--text-m);font-size:.85rem">Brak wypożyczeń</p>'}
       </div>
       <div class="card">
-        <div style="font-family:'Cinzel',serif;font-size:.8rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem">Rezerwacje wg miesiąca</div>
+        <div style="font-family:'Cinzel',serif;font-size:.75rem;color:var(--text-m);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.5rem">Rezerwacje wg miesiąca</div>
         <div class="bar-chart">
           ${(s.byMonth||[]).map(m=>`
             <div class="bar-col">
-              <div class="bar" style="height:${Math.round((m.count/maxCount)*100)}px"></div>
-              <div class="bar-label">${(m.month||'').slice(5)}<br>${m.count}</div>
+              <div class="bar" style="height:${Math.round((m.count/maxCount)*96)}px"></div>
+              <div class="bar-lbl">${(m.month||'').slice(5)}<br>${m.count}</div>
             </div>`).join('')}
         </div>
       </div>
-    </div>
-    <div class="card" style="margin-top:1.5rem;text-align:center">
-      <div style="font-size:2.5rem;color:var(--gold-light);font-family:'Cinzel',serif;font-weight:900">${s.avgRating>0?s.avgRating+' ⭐':'Brak ocen'}</div>
-      <div style="color:var(--text-muted);font-size:.85rem">na podstawie ${s.totalReviews} opinii</div>
     </div>`;
-}
-
-// COUPONS
-async function loadCoupons(){
-  const coupons=await fetch('/api/admin/coupons').then(r=>r.json());
-  document.getElementById('couponsBody').innerHTML=coupons.length?coupons.map(c=>`
-    <tr>
-      <td><strong style="color:var(--gold-light);font-family:'Cinzel',serif">${c.code}</strong></td>
-      <td>${c.discount_percent}%</td><td>${c.uses}/${c.max_uses}</td>
-      <td>${c.expires_at||'Bez limitu'}</td>
-      <td><button class="btn btn-xs btn-danger" onclick="deleteCoupon(${c.id})">Usuń</button></td>
-    </tr>`).join(''):`<tr><td colspan="5" style="color:var(--text-muted);text-align:center;padding:1rem">Brak kuponów.</td></tr>`;
-}
-
-async function createCoupon(){
-  const res=await fetch('/api/admin/coupons',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({code:document.getElementById('cCode').value,discount_percent:document.getElementById('cDiscount').value,max_uses:document.getElementById('cMaxUses').value,expires_at:document.getElementById('cExpires').value||null})
-  }).then(r=>r.json());
-  const al=document.getElementById('couponAlert');
-  if(res.success){al.innerHTML='<div class="alert alert-success">Kupon utworzony!</div>';loadCoupons();}
-  else al.innerHTML=`<div class="alert alert-error">${res.error}</div>`;
-}
-
-async function deleteCoupon(id){ await fetch('/api/admin/coupons/'+id,{method:'DELETE'}); loadCoupons(); }
-
-// CHAT
-async function loadChatList(){
-  const bookings=await fetch('/api/admin/bookings').then(r=>r.json());
-  const el=document.getElementById('chatList');
-  if(!bookings.length){el.innerHTML='<p style="color:var(--text-muted)">Brak rezerwacji.</p>';return;}
-  el.innerHTML=`<div class="grid-3">${bookings.filter(b=>b.status!=='cancelled').map(b=>`
-    <div class="card" style="cursor:pointer" onclick="openAdminChat(${b.id},'${b.username}')">
-      <div style="font-family:'Cinzel',serif;font-size:.9rem;color:var(--text-bright);margin-bottom:.3rem">${PKG_ICONS[b.package_type]||''} ${b.package_name} #${b.id}</div>
-      <div style="color:var(--text-muted);font-size:.8rem">${b.date} o ${b.time}</div>
-      <div style="color:var(--text-muted);font-size:.75rem;margin-top:.2rem">👤 ${b.username} · 💬 ${b.contact_discord}</div>
-      <div style="margin-top:.8rem"><button class="btn btn-outline btn-sm">💬 Otwórz czat</button></div>
-    </div>`).join('')}</div>`;
-}
-
-async function openAdminChat(bookingId,username){
-  adminChatBookingId=bookingId;
-  document.getElementById('chatAdminTitle').textContent='💬 Czat z '+username+' — rezerwacja #'+bookingId;
-  document.getElementById('adminChatMessages').innerHTML='';
-  document.getElementById('chatAdminBox').style.display='';
-  // Switch to chat tab
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('tab-chat').classList.add('active');
-  document.querySelectorAll('.tab-btn')[4].classList.add('active');
-  await loadChatList();
-  const msgs=await fetch('/api/chat/'+bookingId).then(r=>r.json()).catch(()=>[]);
-  msgs.forEach(appendAdminMsg);
-  if(adminChatWs) adminChatWs.close();
-  const proto=location.protocol==='https:'?'wss':'ws';
-  adminChatWs=new WebSocket(proto+'://'+location.host);
-  adminChatWs.onopen=()=>adminChatWs.send(JSON.stringify({type:'join',bookingId,username:'Admin',isAdmin:true}));
-  adminChatWs.onmessage=e=>{ const d=JSON.parse(e.data); if(d.type==='message'&&String(d.data.booking_id)===String(bookingId)) appendAdminMsg(d.data); };
-}
-
-function appendAdminMsg(m){
-  const el=document.getElementById('adminChatMessages');
-  const isMine=m.user_id===myUserId;
-  const cls=isMine?'mine':m.is_admin?'admin':'other';
-  const time=new Date(m.created_at).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
-  const div=document.createElement('div');
-  div.className='chat-msg '+cls;
-  div.innerHTML=`<div>${m.message}</div><div class="chat-msg-meta">${m.is_admin?'🛡️ Ekipa':'👤 '+m.username} · ${time}</div>`;
-  el.appendChild(div); el.scrollTop=el.scrollHeight;
-}
-
-async function sendAdminMsg(){
-  const input=document.getElementById('adminChatInput');
-  const msg=input.value.trim();
-  if(!msg||!adminChatBookingId) return;
-  input.value='';
-  await fetch('/api/chat/'+adminChatBookingId,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:msg})});
 }
 </script>
 </body>
