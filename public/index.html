@@ -9,6 +9,7 @@
     .day-label{font-family:'Cinzel',serif;font-size:.8rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;padding:.5rem 0;border-bottom:2px solid var(--border);margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem;}
     .day-group{margin-bottom:2rem;}
     .savings-banner{background:linear-gradient(135deg,#003020,#004030);border:1px solid #006040;border-radius:var(--r);padding:.8rem 1.1rem;margin-bottom:1.5rem;font-size:.88rem;color:var(--green);}
+    .waiting-banner{background:linear-gradient(135deg,#1a1000,#2a1800);border:1px solid var(--gold-d);border-radius:4px;padding:.4rem .7rem;font-size:.75rem;color:var(--gold);margin-top:.4rem;display:flex;align-items:center;gap:.4rem;}
   </style>
 </head>
 <body>
@@ -104,11 +105,11 @@
           <div style="font-family:'Cinzel',serif;font-size:.85rem;color:var(--text-b);margin-bottom:1rem">👥 Członkowie ekipy</div>
           <div id="teamList"><div class="spinner"></div></div>
           <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
-            <div style="font-size:.78rem;color:var(--text-m);margin-bottom:.6rem">💡 Jak napisać do nas na Discordzie?</div>
+            <div style="font-size:.78rem;color:var(--text-m);margin-bottom:.5rem">💡 Jak napisać do nas na Discordzie?</div>
             <div style="font-size:.82rem;color:var(--text-m);line-height:1.6">
               1. Skopiuj nick wybranej osoby<br>
-              2. Otwórz Discord → kliknij lupkę 🔍 (wyszukiwarka)<br>
-              3. Wpisz skopiowany nick → kliknij na profil → wyślij wiadomość
+              2. Otwórz Discord → kliknij lupkę 🔍<br>
+              3. Wpisz nick → kliknij profil → wyślij wiadomość
             </div>
           </div>
         </div>
@@ -170,6 +171,19 @@
   </div>
 </div>
 
+<!-- FIND PARTY MODAL -->
+<div class="overlay" id="partyOverlay">
+  <div class="modal" style="max-width:420px">
+    <button class="modal-close" onclick="document.getElementById('partyOverlay').classList.remove('open')">✕</button>
+    <div class="modal-title">🔮 Szukam gracza do party</div>
+    <p style="color:var(--text-m);font-size:.9rem;margin-bottom:1.2rem">Napisz do dostępnego członka ekipy — pomoże znaleźć kogoś do party lub dołączy sam z gry!</p>
+    <div id="partyContactList"></div>
+    <div style="margin-top:1rem;padding:.8rem;background:#0a0e1a;border:1px solid var(--border);border-radius:var(--r);font-size:.8rem;color:var(--text-m)">
+      💡 Skopiuj nick i napisz na Discordzie: <em>"Hej, szukam kogoś do Duo/Trio na [godzina]"</em>
+    </div>
+  </div>
+</div>
+
 <footer><p>⚔️ <strong style="color:var(--gold-l)">Patologiczne Expowisko</strong> — Metin2 Leveling dla Chunjo · Nie jesteśmy oficjalną stroną serwera Projekt Hard.</p></footer>
 <script src="/js/app.js"></script>
 <script>
@@ -177,11 +191,13 @@ let slots=[], filter='all', selectedSlotId=null, selectedPkg=null, selectedEq='n
 
 const TEAM = [
   { display: 'Ezvay',    nick: 'ezvay',           serverNick: 'ezvay',    id: '269140484721475606' },
-  { display: 'Prezes',   nick: 'prezesjaroslaw_',  serverNick: 'Judaszek', id: '743808864981352559' },
-  { display: 'Jarek',    nick: 'jarekkaczka',      serverNick: 'Yodasz',   id: '513676603696611330' },
-  { display: 'Bielluch', nick: 'bielluch',         serverNick: 'Bieluch', id: '449211767890116629' },
-  { display: 'Marco',    nick: 'xmarco0',          serverNick: 'Marco',    id: '238942736043081729' },
+  { display: 'Judaszek',   nick: 'prezesjaroslaw_',  serverNick: 'judaszek', id: '743808864981352559' },
+  { display: 'Yodasz',    nick: 'jarekkaczka',      serverNick: 'yodasz',   id: '513676603696611330' },
+  { display: 'Bieluch', nick: 'bielluch',         serverNick: 'bielluch', id: '449211767890116629' },
+  { display: 'Marco',    nick: 'xmarco0',          serverNick: 'marco',    id: '238942736043081729' },
 ];
+
+let teamWithStatus = TEAM.map(m => ({ ...m, online: false }));
 
 async function loadTeam() {
   let onlineNicks = [];
@@ -190,22 +206,22 @@ async function loadTeam() {
     onlineNicks = (widget.members||[]).map(m=>(m.username||'').toLowerCase());
   } catch(e) {}
 
-  const withStatus = TEAM.map(m => ({
+  teamWithStatus = TEAM.map(m => ({
     ...m,
-   online: onlineNicks.some(n => 
-  n.includes(m.serverNick.toLowerCase()) || 
-  m.serverNick.toLowerCase().includes(n) ||
-  n.includes(m.nick.toLowerCase()) ||
-  m.nick.toLowerCase().includes(n)
-)
+    online: onlineNicks.some(n =>
+      n.includes(m.serverNick.toLowerCase()) ||
+      m.serverNick.toLowerCase().includes(n) ||
+      n.includes(m.nick.toLowerCase()) ||
+      m.nick.toLowerCase().includes(n)
+    )
   })).sort((a,b) => b.online - a.online);
 
-  document.getElementById('teamList').innerHTML = withStatus.map(m => `
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem .75rem;background:#060a14;border:1px solid ${m.online?'var(--gold-d)':'var(--border)'};border-radius:var(--r);margin-bottom:.4rem">
+  document.getElementById('teamList').innerHTML = teamWithStatus.map(m => `
+    <div data-online="${m.online}" data-nick="${m.nick}" data-display="${m.display}"
+      style="display:flex;align-items:center;justify-content:space-between;padding:.6rem .75rem;background:#060a14;border:1px solid ${m.online?'var(--gold-d)':'var(--border)'};border-radius:var(--r);margin-bottom:.4rem">
       <div style="display:flex;align-items:center;gap:.75rem">
         <div style="position:relative;flex-shrink:0">
-          <img src="https://cdn.discordapp.com/avatars/${m.id}/${m.id}.png?size=64" style="width:38px;height:38px;border-radius:50%;border:1px solid var(--border)" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-          <div style="display:none;width:38px;height:38px;border-radius:50%;background:var(--gold-bg);border:1px solid var(--gold-d);align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold-l)">${m.display[0]}</div>
+          <div style="width:38px;height:38px;border-radius:50%;background:var(--gold-bg);border:1px solid var(--gold-d);display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold-l)">${m.display[0]}</div>
           <div style="position:absolute;bottom:0;right:0;width:12px;height:12px;border-radius:50%;border:2px solid #060a14;background:${m.online?'#40d090':'#555'}"></div>
         </div>
         <div>
@@ -225,6 +241,35 @@ function copyNick(nick, btn) {
   btn.textContent = '✅';
   setTimeout(() => btn.textContent = '📋', 2000);
 }
+
+function getOnlineMember() {
+  const online = teamWithStatus.filter(m => m.online);
+  return online.length > 0 ? online[0] : teamWithStatus[0];
+}
+
+function openPartyModal() {
+  const sorted = [...teamWithStatus].sort((a,b) => b.online - a.online);
+  document.getElementById('partyContactList').innerHTML = sorted.map(m => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem .7rem;background:#060a14;border:1px solid ${m.online?'var(--gold-d)':'var(--border)'};border-radius:var(--r);margin-bottom:.35rem">
+      <div style="display:flex;align-items:center;gap:.6rem">
+        <div style="width:10px;height:10px;border-radius:50%;background:${m.online?'#40d090':'#555'};flex-shrink:0"></div>
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:.85rem;color:var(--text-b)">${m.display}</div>
+          <div style="font-size:.7rem;color:${m.online?'#40d090':'var(--text-m)'}">${m.online?'Online':'Offline'}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:.35rem;align-items:center">
+        <div style="font-size:.72rem;color:var(--text-m);background:#0a0e1a;border:1px solid var(--border);border-radius:4px;padding:.18rem .45rem;font-family:monospace">${m.nick}</div>
+        <button class="btn btn-gold btn-xs" onclick="copyNick('${m.nick}',this)">📋 Kopiuj</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('partyOverlay').classList.add('open');
+}
+
+document.getElementById('partyOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('partyOverlay'))
+    document.getElementById('partyOverlay').classList.remove('open');
+});
 
 loadTeam();
 setInterval(loadTeam, 60000);
@@ -276,12 +321,15 @@ function renderSlot(s){
   const isFull=s.package_type&&s.spots_left<=0;
   const maxDots=s.max_players||(s.package_type?PKG[s.package_type].max:3);
   const taken=s.bookings||[];
+  const isIncomplete = s.package_type && s.package_type !== 'solo' && s.booked_count > 0 && s.spots_left > 0;
+
   let dots='';
   for(let i=0;i<maxDots;i++){
     const b=taken[i];
     if(b) dots+=`<div class="pdot taken" title="${b.char_name} (${b.char_class} poz.${b.char_level})">⚔️</div>`;
     else dots+=`<div class="pdot empty">?</div>`;
   }
+
   let priceHint='';
   if(s.package_type){
     priceHint=`<div style="font-size:.75rem;color:var(--gold-l);">${PKG[s.package_type].icon} ${PKG[s.package_type].name} · ${PKG[s.package_type].price.toLocaleString()} SM/h</div>`;
@@ -292,7 +340,15 @@ function renderSlot(s){
   } else {
     priceHint=`<div style="font-size:.75rem;color:var(--text-m)">Typ ustali pierwszy gracz</div>`;
   }
+
   const partyOpen=s.is_open_party;
+
+  const waitingBanner = isIncomplete ? `
+    <div class="waiting-banner">
+      ⏳ Slot wystartuje gdy będzie komplet
+      <button class="btn btn-xs" style="background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-d);margin-left:auto" onclick="event.stopPropagation();openPartyModal()">🔮 Szukam party</button>
+    </div>` : '';
+
   return `<div class="slot-card ${isFull?'full':''} ${partyOpen?'party-open':''}">
     ${partyOpen?'<div class="party-badge" style="margin-bottom:.6rem">🔮 Szuka graczy do party!</div>':''}
     <div class="slot-time">${s.time}</div>
@@ -300,6 +356,7 @@ function renderSlot(s){
     <div class="slot-by" style="margin-top:.3rem;font-size:.72rem;color:var(--text-m)">Ekipa: ${s.admin_name}</div>
     <div class="slot-players" style="margin:.8rem 0 .6rem">${s.package_type?dots:'<div style="font-size:.8rem;color:var(--text-m);font-style:italic">Brak rezerwacji — zarezerwuj jako pierwszy!</div>'}</div>
     ${priceHint}
+    ${waitingBanner}
     ${s.note?`<div style="font-size:.75rem;color:var(--text-m);font-style:italic;margin-top:.4rem">📝 ${s.note}</div>`:''}
     <div class="slot-footer" style="margin-top:.8rem">
       <span class="badge ${isFull?'b-full':partyOpen?'b-party':'b-open'}">${isFull?'Pełny':partyOpen?'Szuka party':s.package_type?s.spots_left+' wolne':'Wolny'}</span>
