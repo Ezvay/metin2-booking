@@ -6,83 +6,78 @@
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<div class="chunjo-banner">
-  <strong style="color:var(--gold-light);letter-spacing:.2em">CHUNJO</strong> — Patologiczne Expowisko
-</div>
+<div class="chunjo-banner"><strong style="color:var(--gold-light);letter-spacing:.2em">CHUNJO</strong> — Patologiczne Expowisko</div>
 <nav>
   <a class="nav-logo" href="/">⚔️ Patologiczne <span>Expowisko</span></a>
   <div class="nav-links">
     <a href="/">Strona główna</a>
-    <a href="/calendar">Kalendarz</a>
-    <a href="/book">Rezerwuj</a>
+    <a href="/slots">📅 Terminy</a>
   </div>
 </nav>
 <main>
-<div class="status-box">
-  <div id="content"><div class="spinner"></div></div>
+<div style="max-width:600px;margin:0 auto;padding:3rem 1.5rem" id="content">
+  <div class="spinner"></div>
 </div>
 </main>
 <footer><p>⚔️ <strong style="color:var(--gold-light)">Patologiczne Expowisko</strong></p></footer>
 <script src="/js/nav.js"></script>
 <script>
-  initNav();
-  const token = new URLSearchParams(location.search).get('token');
-
-  const steps = [
-    { key: 'pending',  label: 'Rezerwacja złożona',     desc: 'Czekamy na potwierdzenie przez ekipę.' },
-    { key: 'active',   label: 'Rezerwacja przyjęta',    desc: 'Ekipa potwierdziła termin. Do zobaczenia!' },
-    { key: 'done',     label: 'Expienie zakończone',     desc: 'Dziękujemy! Zostaw opinię w panelu.' },
+  const token=new URLSearchParams(location.search).get('token');
+  const steps=[
+    {key:'pending', label:'Rezerwacja złożona', desc:'Czekamy na potwierdzenie przez ekipę.'},
+    {key:'active',  label:'Rezerwacja potwierdzona!', desc:'Ekipa potwierdziła termin. Do zobaczenia w grze!'},
+    {key:'done',    label:'Expienie zakończone', desc:'Dziękujemy! Możesz zostawić opinię w panelu.'}
   ];
 
-  async function load() {
-    const el = document.getElementById('content');
-    if (!token) {
-      el.innerHTML = '<div class="alert alert-error">Brak tokenu rezerwacji.</div>'; return;
-    }
-    const data = await fetch('/api/status/' + token).then(r => r.json()).catch(() => null);
-    if (!data || data.error) {
-      el.innerHTML = '<div class="alert alert-error">Nie znaleziono rezerwacji.</div>'; return;
-    }
+  async function load(){
+    const el=document.getElementById('content');
+    if(!token){el.innerHTML='<div class="alert alert-error">Brak tokenu.</div>';return;}
+    const data=await fetch('/api/status/'+token).then(r=>r.json()).catch(()=>null);
+    if(!data||data.error){el.innerHTML='<div class="alert alert-error">Nie znaleziono rezerwacji.</div>';return;}
 
-    const currentIdx = steps.findIndex(s => s.key === data.status);
-    const isRejected = data.status === 'rejected';
+    const icon=PKG_ICONS[data.package_type]||'⚔️';
+    const isRejected=data.status==='rejected'||data.status==='cancelled';
+    const currentIdx=steps.findIndex(s=>s.key===data.status);
 
-    el.innerHTML = `
-      <h1 class="page-title" style="margin-bottom:.5rem">Status <span>Rezerwacji</span></h1>
-      <p style="color:var(--text-muted);font-style:italic;margin-bottom:2rem">Rezerwacja #${data.id} · ${data.booked_date} o ${data.booked_time}</p>
+    el.innerHTML=`
+      <h1 style="font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:var(--text-bright);margin-bottom:.3rem">Status <span style="color:var(--gold-light)">Rezerwacji</span></h1>
+      <p style="color:var(--text-muted);font-style:italic;margin-bottom:2rem">Rezerwacja #${data.id}</p>
 
       <div class="card" style="margin-bottom:1.5rem">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
-          <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--text-bright)">${PARTY_ICONS[data.party_size]||'⚔️'} ${data.service_name}</div>
+          <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--text-bright)">${icon} ${data.package_name}</div>
           <span class="badge ${STATUS_BADGES[data.status]||'badge-pending'}">${STATUS_LABELS[data.status]||data.status}</span>
         </div>
-        <div style="display:flex;gap:1.5rem;flex-wrap:wrap;color:var(--text-muted);font-size:.9rem">
-          <span>💰 ${data.price_sm?.toLocaleString()} SM/h od osoby</span>
-          <span>👥 ${data.party_size} os. maks.</span>
+        <div style="display:flex;gap:1.5rem;flex-wrap:wrap;color:var(--text-muted);font-size:.9rem;margin-bottom:1rem">
+          <span>📅 ${data.date} o ${data.time}</span>
+          <span>💰 ${data.price_sm?.toLocaleString()} SM/h</span>
+          <span>👥 ${data.max_players} ${data.max_players===1?'osoba':'osoby'} maks.</span>
         </div>
-        ${data.members.length ? `
-        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
-          <div style="font-family:'Cinzel',serif;font-size:.7rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem">Party</div>
-          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-            ${data.members.map(m=>`<div class="cal-member">⚔️ ${m.char_name} (${m.char_class} poz.${m.char_level})</div>`).join('')}
-          </div>
-        </div>` : ''}
+        ${data.slot_bookings?.length?`
+          <div style="border-top:1px solid var(--border);padding-top:1rem">
+            <div style="font-family:'Cinzel',serif;font-size:.7rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem">Party</div>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+              ${data.slot_bookings.map(m=>`<div style="background:#0a0e1a;border:1px solid var(--border);border-radius:4px;padding:.2rem .6rem;font-size:.85rem">⚔️ ${m.char_name} (${m.char_class} poz.${m.char_level})</div>`).join('')}
+            </div>
+          </div>`:''
+        }
       </div>
 
-      ${isRejected ? `<div class="alert alert-error">Rezerwacja została odrzucona. Skontaktuj się z ekipą na Discordzie.</div>` : `
-      <div class="status-timeline">
-        ${steps.map((s, i) => {
-          const isDone = i < currentIdx || (i === currentIdx && data.status === 'done');
-          const isActive = i === currentIdx && data.status !== 'done';
-          return `<div class="status-step ${isDone?'done':''} ${isActive?'active':''}">
-            <div class="status-step-title">${isDone||isActive?'✓ ':''} ${s.label}</div>
-            <div class="status-step-desc">${s.desc}</div>
-          </div>`;
-        }).join('')}
-      </div>`}
-
+      ${isRejected
+        ?`<div class="alert alert-error">Rezerwacja została ${data.status==='cancelled'?'anulowana':'odrzucona'}. Skontaktuj się z ekipą na Discordzie.</div>`
+        :`<div class="status-timeline">
+          ${steps.map((s,i)=>{
+            const isDone=i<currentIdx||(i===currentIdx&&data.status==='done');
+            const isActive=i===currentIdx&&data.status!=='done';
+            return `<div class="status-step ${isDone?'done':''} ${isActive?'active':''}">
+              <div class="status-step-title">${isDone||isActive?'✓ ':''} ${s.label}</div>
+              <div class="status-step-desc">${s.desc}</div>
+            </div>`;
+          }).join('')}
+        </div>`
+      }
       <div style="margin-top:2rem;padding:1rem;background:#0a0e1a;border:1px solid var(--border);border-radius:var(--radius);font-size:.85rem;color:var(--text-muted)">
-        💡 Masz pytania? Zaloguj się i skorzystaj z czatu w panelu rezerwacji.
+        💡 Masz pytania? Zaloguj się i użyj czatu w panelu rezerwacji.
       </div>
     `;
   }

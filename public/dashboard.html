@@ -7,13 +7,7 @@
   <style>
     .booking-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem;position:relative;overflow:hidden;}
     .booking-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4;}
-    .booking-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem;}
-    .booking-service{font-family:'Cinzel',serif;font-size:1.1rem;color:var(--text-bright);}
-    .booking-meta{display:flex;gap:1.2rem;flex-wrap:wrap;color:var(--text-muted);font-size:.9rem;margin-bottom:.8rem;}
-    .booking-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--border);}
-    .tab-bar{display:flex;gap:.3rem;margin-bottom:1rem;border-bottom:1px solid var(--border);padding-bottom:.5rem;}
-    .tab-btn{padding:.4rem .9rem;border-radius:4px 4px 0 0;font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:none;background:transparent;color:var(--text-muted);transition:all .15s;}
-    .tab-btn.active{color:var(--gold-light);border-bottom:2px solid var(--gold);}
+    .booking-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);}
   </style>
 </head>
 <body>
@@ -24,7 +18,8 @@
 <nav>
   <a class="nav-logo" href="/">⚔️ Patologiczne <span>Expowisko</span></a>
   <div class="nav-links">
-    <a href="/">Strona główna</a><a href="/calendar">Kalendarz</a><a href="/book">Rezerwuj</a>
+    <a href="/">Strona główna</a>
+    <a href="/slots">📅 Dostępne terminy</a>
     <a href="/dashboard" class="active">Moje rezerwacje</a>
     <a href="/admin" id="navAdmin" style="display:none">Admin</a>
     <span id="navUser" style="color:var(--gold-light);font-family:'Cinzel',serif;font-size:.8rem"></span>
@@ -35,7 +30,7 @@
 <div class="page-wrap">
   <div class="page-header">
     <h1 class="page-title">Moje <span>Rezerwacje</span></h1>
-    <a href="/book" class="btn btn-gold btn-sm">+ Nowa rezerwacja</a>
+    <a href="/slots" class="btn btn-gold btn-sm">+ Zarezerwuj termin</a>
   </div>
   <div id="content"><div class="spinner"></div></div>
 </div>
@@ -48,13 +43,13 @@
     <div class="modal-title">⭐ Oceń expienie</div>
     <div id="reviewAlert"></div>
     <div class="form-group">
-      <label class="form-label">Ocena</label>
+      <label class="form-label">Ocena *</label>
       <div class="stars" id="stars">
-        <span class="star" onclick="setRating(1)">⭐</span>
-        <span class="star" onclick="setRating(2)">⭐</span>
-        <span class="star" onclick="setRating(3)">⭐</span>
-        <span class="star" onclick="setRating(4)">⭐</span>
-        <span class="star" onclick="setRating(5)">⭐</span>
+        <span class="star" onclick="setRating(1)" style="opacity:.3">⭐</span>
+        <span class="star" onclick="setRating(2)" style="opacity:.3">⭐</span>
+        <span class="star" onclick="setRating(3)" style="opacity:.3">⭐</span>
+        <span class="star" onclick="setRating(4)" style="opacity:.3">⭐</span>
+        <span class="star" onclick="setRating(5)" style="opacity:.3">⭐</span>
       </div>
     </div>
     <div class="form-group"><label class="form-label">Komentarz (opcjonalne)</label><textarea id="reviewComment" class="form-control" rows="3" placeholder="Powiedz jak było..."></textarea></div>
@@ -64,9 +59,9 @@
 
 <!-- CHAT MODAL -->
 <div class="modal-overlay" id="chatModal">
-  <div class="modal" style="max-width:560px">
+  <div class="modal" style="max-width:540px">
     <button class="modal-close" onclick="closeChat()">✕</button>
-    <div class="modal-title" id="chatTitle">💬 Czat</div>
+    <div class="modal-title" id="chatTitle">💬 Czat z ekipą</div>
     <div class="chat-box">
       <div class="chat-messages" id="chatMessages"></div>
     </div>
@@ -80,52 +75,57 @@
 <footer><p>⚔️ <strong style="color:var(--gold-light)">Patologiczne Expowisko</strong></p></footer>
 <script src="/js/nav.js"></script>
 <script>
-let myUsername='', myUserId=null;
-let reviewBookingId=null, currentRating=0;
-let chatBookingId=null, chatWs=null;
+let myUserId=null, reviewBookingId=null, currentRating=0, chatBookingId=null, chatWs=null;
 
-initNav('/dashboard').then(data=>{
+initNav().then(data=>{
   if(!data.loggedIn){location.href='/login?redirect=/dashboard';return;}
-  myUsername=data.username; myUserId=data.userId;
+  myUserId=data.userId;
   loadBookings();
 });
 
 async function loadBookings(){
-  const members=await fetch('/api/my-bookings').then(r=>r.json());
+  const bookings=await fetch('/api/my-bookings').then(r=>r.json());
   const el=document.getElementById('content');
-  if(!members.length){
-    el.innerHTML=`<div style="text-align:center;padding:4rem;color:var(--text-muted)"><p style="font-size:2.5rem;margin-bottom:1rem">📭</p><p>Nie masz jeszcze żadnych rezerwacji.</p><a href="/book" class="btn btn-gold" style="margin-top:1.5rem">⚔️ Zarezerwuj expienie</a></div>`;
+  if(!bookings.length){
+    el.innerHTML=`<div style="text-align:center;padding:4rem;color:var(--text-muted)">
+      <p style="font-size:3rem;margin-bottom:1rem">📭</p>
+      <p>Nie masz jeszcze żadnych rezerwacji.</p>
+      <a href="/slots" class="btn btn-gold" style="margin-top:1.5rem">📅 Zobacz dostępne terminy</a>
+    </div>`;
     return;
   }
-  el.innerHTML=members.map(m=>{
-    const partyHtml=m.party_members.map(pm=>`<span style="background:#0a0e1a;border:1px solid var(--border);border-radius:4px;padding:.15rem .5rem;font-size:.8rem;${pm.username===myUsername?'border-color:var(--gold-dim);color:var(--gold-light)':''}">⚔️ ${pm.char_name} (${pm.char_class})</span>`).join('');
-    const statusUrl='/status?token='+m.status_token;
-    const canCancel=m.status==='pending'||m.status==='active';
-    const canReview=m.status==='done'&&!m.reviewed;
+  el.innerHTML=bookings.map(b=>{
+    const icon=PKG_ICONS[b.package_type]||'⚔️';
+    const partyHtml=b.slot_bookings.map(m=>`
+      <span style="background:#0a0e1a;border:1px solid var(--border);border-radius:4px;padding:.15rem .5rem;font-size:.8rem;color:var(--text)">
+        ⚔️ ${m.char_name} (${m.char_class} poz.${m.char_level})
+      </span>`).join('');
+    const canCancel=b.status==='pending';
+    const canReview=b.status==='done'&&!b.reviewed;
+    const statusUrl='/status?token='+b.status_token;
 
     return `<div class="booking-card fade-up">
-      <div class="booking-header">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem">
         <div>
-          <div class="booking-service">${PARTY_ICONS[m.party_size]||'⚔️'} ${m.service_name} <span style="color:var(--text-muted);font-size:.85rem">(${PARTY_NAMES[m.party_size]||''})</span></div>
-          <div style="color:var(--text-muted);font-size:.8rem;margin-top:.2rem">Złożono: ${new Date(m.joined_at).toLocaleDateString('pl-PL')}</div>
+          <div style="font-family:'Cinzel',serif;font-size:1.1rem;color:var(--text-bright)">${icon} ${b.package_name}</div>
+          <div style="color:var(--text-muted);font-size:.85rem;margin-top:.2rem">📅 ${b.date} o ${b.time}</div>
         </div>
-        <span class="badge ${STATUS_BADGES[m.status]||'badge-pending'}">${STATUS_LABELS[m.status]||m.status}</span>
+        <span class="badge ${STATUS_BADGES[b.status]||'badge-pending'}">${STATUS_LABELS[b.status]||b.status}</span>
       </div>
-      <div class="booking-meta">
-        <span>⚔️ ${m.char_name} (${m.char_class})</span>
-        <span>📈 Poz. ${m.char_level} → ${m.target_level}</span>
-        <span>📅 ${m.booked_date} o ${m.booked_time}</span>
-        <span>💰 ${m.price_sm?.toLocaleString()} SM/h</span>
-        ${m.contact_discord?`<span>💬 ${m.contact_discord}</span>`:''}
+      <div style="display:flex;gap:1.2rem;flex-wrap:wrap;color:var(--text-muted);font-size:.9rem;margin-bottom:.8rem">
+        <span>⚔️ ${b.char_name} (${b.char_class})</span>
+        <span>📈 Poz. ${b.char_level}</span>
+        <span>💰 ${b.price_sm?.toLocaleString()} SM/h</span>
+        <span>💬 ${b.contact_discord}</span>
       </div>
-      ${m.party_size>1?`<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.5rem">${partyHtml}</div>`:''}
-      ${m.note?`<div style="padding:.5rem .8rem;background:#0a0e1a;border-radius:4px;color:var(--text-muted);font-size:.85rem;margin-bottom:.5rem">📝 ${m.note}</div>`:''}
+      ${b.max_players>1&&b.slot_bookings.length>0?`<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.5rem">${partyHtml}</div>`:''}
+      ${b.slot_note?`<div style="padding:.4rem .7rem;background:#0a0e1a;border-radius:4px;color:var(--text-muted);font-size:.85rem;margin-bottom:.5rem">📝 ${b.slot_note}</div>`:''}
       <div class="booking-actions">
-        <button class="btn btn-outline btn-sm" onclick="openChat(${m.booking_id},'${m.service_name}')">💬 Czat z ekipą</button>
+        <button class="btn btn-outline btn-sm" onclick="openChat(${b.id},'${b.package_name}')">💬 Czat z ekipą</button>
         <a href="${statusUrl}" target="_blank" class="btn btn-outline btn-sm">🔗 Status</a>
-        ${canReview?`<button class="btn btn-success btn-sm" onclick="openReview(${m.booking_id})">⭐ Oceń</button>`:''}
-        ${m.status==='done'&&m.reviewed?`<span class="badge badge-done">✓ Oceniono</span>`:''}
-        ${canCancel?`<button class="btn btn-danger btn-sm" onclick="cancelBooking(${m.booking_id})">✕ Anuluj</button>`:''}
+        ${canReview?`<button class="btn btn-success btn-sm" onclick="openReview(${b.id})">⭐ Oceń</button>`:''}
+        ${b.status==='done'&&b.reviewed?`<span class="badge badge-done">✓ Oceniono</span>`:''}
+        ${canCancel?`<button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id})">✕ Anuluj</button>`:''}
       </div>
     </div>`;
   }).join('');
@@ -139,14 +139,15 @@ async function cancelBooking(id){
 }
 
 // REVIEW
-function openReview(bookingId){ reviewBookingId=bookingId; currentRating=0; updateStars(); document.getElementById('reviewComment').value=''; document.getElementById('reviewAlert').innerHTML=''; document.getElementById('reviewModal').classList.add('open'); }
+let reviewBookId=null;
+function openReview(id){ reviewBookId=id; currentRating=0; updateStars(); document.getElementById('reviewComment').value=''; document.getElementById('reviewAlert').innerHTML=''; document.getElementById('reviewModal').classList.add('open'); }
 function closeReview(){ document.getElementById('reviewModal').classList.remove('open'); }
 function setRating(r){ currentRating=r; updateStars(); }
-function updateStars(){ document.querySelectorAll('.star').forEach((s,i)=>{ s.style.opacity=i<currentRating?'1':'.3'; }); }
+function updateStars(){ document.querySelectorAll('.star').forEach((s,i)=>s.style.opacity=i<currentRating?'1':'.3'); }
 async function submitReview(){
   if(!currentRating){ document.getElementById('reviewAlert').innerHTML='<div class="alert alert-error">Wybierz ocenę.</div>'; return; }
   const res=await fetch('/api/reviews',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({booking_id:reviewBookingId,rating:currentRating,comment:document.getElementById('reviewComment').value})
+    body:JSON.stringify({booking_id:reviewBookId,rating:currentRating,comment:document.getElementById('reviewComment').value})
   }).then(r=>r.json());
   if(res.success){ closeReview(); loadBookings(); }
   else document.getElementById('reviewAlert').innerHTML=`<div class="alert alert-error">${res.error}</div>`;
@@ -158,34 +159,25 @@ async function openChat(bookingId, name){
   document.getElementById('chatTitle').textContent='💬 Czat — '+name+' #'+bookingId;
   document.getElementById('chatMessages').innerHTML='';
   document.getElementById('chatModal').classList.add('open');
-
-  // Load history
   const msgs=await fetch('/api/chat/'+bookingId).then(r=>r.json()).catch(()=>[]);
-  msgs.forEach(m=>appendMsg(m));
-
-  // WebSocket
+  msgs.forEach(appendMsg);
   if(chatWs) chatWs.close();
   const proto=location.protocol==='https:'?'wss':'ws';
   chatWs=new WebSocket(proto+'://'+location.host);
-  chatWs.onopen=()=>chatWs.send(JSON.stringify({type:'join',bookingId,username:myUsername,isAdmin:false}));
-  chatWs.onmessage=e=>{ const d=JSON.parse(e.data); if(d.type==='message'&&d.data.booking_id==bookingId) appendMsg(d.data); };
+  chatWs.onopen=()=>chatWs.send(JSON.stringify({type:'join',bookingId,username:'gracz'}));
+  chatWs.onmessage=e=>{ const d=JSON.parse(e.data); if(d.type==='message'&&String(d.data.booking_id)===String(bookingId)) appendMsg(d.data); };
 }
-
-function closeChat(){ document.getElementById('chatModal').classList.remove('open'); if(chatWs){chatWs.close();chatWs=null;} chatBookingId=null; }
-
+function closeChat(){ document.getElementById('chatModal').classList.remove('open'); if(chatWs){chatWs.close();chatWs=null;} }
 function appendMsg(m){
   const el=document.getElementById('chatMessages');
   const isMine=m.user_id===myUserId;
-  const isAdmin=m.is_admin;
-  const cls=isMine?'mine':isAdmin?'admin':'other';
+  const cls=isMine?'mine':m.is_admin?'admin':'other';
   const time=new Date(m.created_at).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
   const div=document.createElement('div');
   div.className='chat-msg '+cls;
-  div.innerHTML=`<div>${m.message}</div><div class="chat-msg-meta">${isAdmin?'🛡️ Ekipa':'👤 '+m.username} · ${time}</div>`;
-  el.appendChild(div);
-  el.scrollTop=el.scrollHeight;
+  div.innerHTML=`<div>${m.message}</div><div class="chat-msg-meta">${m.is_admin?'🛡️ Ekipa':'👤 '+m.username} · ${time}</div>`;
+  el.appendChild(div); el.scrollTop=el.scrollHeight;
 }
-
 async function sendMsg(){
   const input=document.getElementById('chatInput');
   const msg=input.value.trim();

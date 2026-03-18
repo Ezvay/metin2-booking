@@ -5,13 +5,12 @@
   <title>Panel Admina — Patologiczne Expowisko</title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
-    .tab-bar{display:flex;gap:.3rem;margin-bottom:1.5rem;border-bottom:1px solid var(--border);}
-    .tab-btn{padding:.5rem 1.2rem;font-family:'Cinzel',serif;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:none;background:transparent;color:var(--text-muted);transition:all .15s;border-bottom:2px solid transparent;}
-    .tab-btn.active{color:var(--gold-light);border-bottom-color:var(--gold);}
-    .tab-content{display:none;} .tab-content.active{display:block;}
-    .filter-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem;}
+    .slot-admin-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;margin-bottom:.8rem;position:relative;overflow:hidden;}
+    .slot-admin-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4;}
+    .slot-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;margin-bottom:.8rem;}
+    .slot-title{font-family:'Cinzel',serif;font-size:1rem;color:var(--text-bright);}
+    .booking-row{background:#0a0e1a;border-radius:4px;padding:.5rem .8rem;margin-bottom:.3rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;font-size:.85rem;}
     .actions{display:flex;gap:.4rem;flex-wrap:wrap;}
-    .members-list div{padding:.1rem 0;font-size:.8rem;color:var(--text-muted);}
   </style>
 </head>
 <body>
@@ -22,7 +21,7 @@
 <nav>
   <a class="nav-logo" href="/">⚔️ Patologiczne <span>Expowisko</span></a>
   <div class="nav-links">
-    <a href="/">Strona główna</a><a href="/calendar">Kalendarz</a>
+    <a href="/">Strona główna</a><a href="/slots">📅 Terminy</a>
     <a href="/dashboard">Moje rez.</a><a href="/admin" class="active">Admin</a>
     <span id="navUser" style="color:var(--gold-light);font-family:'Cinzel',serif;font-size:.8rem"></span>
     <form action="/logout" method="post"><button class="btn btn-outline btn-sm">Wyloguj</button></form>
@@ -33,26 +32,59 @@
   <h1 class="page-title" style="margin-bottom:1.5rem">Panel <span>Administratora</span></h1>
 
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="showTab('bookings',this)">📋 Rezerwacje</button>
+    <button class="tab-btn active" onclick="showTab('slots',this)">📅 Sloty</button>
+    <button class="tab-btn" onclick="showTab('bookings',this)">📋 Rezerwacje</button>
     <button class="tab-btn" onclick="showTab('stats',this)">📊 Statystyki</button>
     <button class="tab-btn" onclick="showTab('coupons',this)">🏷️ Kupony</button>
     <button class="tab-btn" onclick="showTab('chat',this)">💬 Czaty</button>
   </div>
 
-  <!-- BOOKINGS TAB -->
-  <div id="tab-bookings" class="tab-content active">
+  <!-- SLOTS TAB -->
+  <div id="tab-slots" class="tab-content active">
+    <div class="card" style="margin-bottom:1.5rem">
+      <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--text-bright);margin-bottom:1rem">➕ Dodaj nowy slot</div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">Data *</label><input type="date" id="newDate" class="form-control" min=""></div>
+        <div class="form-group"><label class="form-label">Godzina *</label><input type="time" id="newTime" class="form-control"></div>
+        <div class="form-group"><label class="form-label">Nazwa pakietu *</label><input type="text" id="newName" class="form-control" placeholder="np. Expienie Solo"></div>
+        <div class="form-group"><label class="form-label">Typ *</label>
+          <select id="newType" class="form-control">
+            <option value="solo">🗡️ Solo (1 osoba)</option>
+            <option value="duo">⚔️ Duo (2 osoby)</option>
+            <option value="trio">🔱 Trio (3 osoby)</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Limit miejsc *</label><input type="number" id="newMax" class="form-control" min="1" max="3" value="1"></div>
+        <div class="form-group"><label class="form-label">Cena SM/h *</label><input type="number" id="newPrice" class="form-control" min="100" placeholder="5000"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Uwagi (opcjonalne)</label><input type="text" id="newNote" class="form-control" placeholder="np. Wymagany eqp +6"></div>
+      <button class="btn btn-gold" onclick="createSlot()">+ Dodaj slot</button>
+      <div id="slotAlert" style="margin-top:.8rem"></div>
+    </div>
+
     <div class="filter-bar">
-      <button class="filter-btn active" onclick="filterStatus('all',this)">Wszystkie</button>
-      <button class="filter-btn" onclick="filterStatus('pending',this)">Oczekujące</button>
-      <button class="filter-btn" onclick="filterStatus('active',this)">W toku</button>
-      <button class="filter-btn" onclick="filterStatus('done',this)">Ukończone</button>
-      <button class="filter-btn" onclick="filterStatus('rejected',this)">Odrzucone</button>
+      <button class="filter-btn active" onclick="filterSlots('all',this)">Wszystkie</button>
+      <button class="filter-btn" onclick="filterSlots('upcoming',this)">Nadchodzące</button>
+      <button class="filter-btn" onclick="filterSlots('open',this)">Otwarte</button>
+      <button class="filter-btn" onclick="filterSlots('full',this)">Pełne</button>
+    </div>
+    <div id="slotsAdminList"><div class="spinner"></div></div>
+  </div>
+
+  <!-- BOOKINGS TAB -->
+  <div id="tab-bookings" class="tab-content">
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterBookings('all',this)">Wszystkie</button>
+      <button class="filter-btn" onclick="filterBookings('pending',this)">Oczekujące</button>
+      <button class="filter-btn" onclick="filterBookings('active',this)">Potwierdzone</button>
+      <button class="filter-btn" onclick="filterBookings('done',this)">Ukończone</button>
+      <button class="filter-btn" onclick="filterBookings('rejected',this)">Odrzucone</button>
     </div>
     <div class="card">
       <div class="table-wrap">
         <table>
-          <thead><tr><th>#</th><th>Pakiet</th><th>Termin</th><th>Gracze</th><th>Status</th><th>Akcje</th></tr></thead>
-          <tbody id="tbody"><tr><td colspan="6"><div class="spinner"></div></td></tr></tbody>
+          <thead><tr><th>#</th><th>Slot</th><th>Gracz</th><th>Postać</th><th>Discord</th><th>Status</th><th>Akcje</th></tr></thead>
+          <tbody id="bookingsBody"><tr><td colspan="7"><div class="spinner"></div></td></tr></tbody>
         </table>
       </div>
     </div>
@@ -68,20 +100,19 @@
     <div class="card" style="margin-bottom:1.5rem">
       <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--text-bright);margin-bottom:1rem">Nowy kupon</div>
       <div class="grid-2">
-        <div class="form-group"><label class="form-label">Kod kuponu *</label><input type="text" id="newCouponCode" class="form-control" placeholder="PROMO20" style="text-transform:uppercase"></div>
-        <div class="form-group"><label class="form-label">Rabat % *</label><input type="number" id="newCouponDiscount" class="form-control" min="1" max="100" placeholder="20"></div>
-        <div class="form-group"><label class="form-label">Maks. użyć</label><input type="number" id="newCouponMaxUses" class="form-control" min="1" value="1"></div>
-        <div class="form-group"><label class="form-label">Wygasa (opcjonalne)</label><input type="date" id="newCouponExpires" class="form-control"></div>
+        <div class="form-group"><label class="form-label">Kod *</label><input type="text" id="cCode" class="form-control" placeholder="PROMO20" style="text-transform:uppercase"></div>
+        <div class="form-group"><label class="form-label">Rabat % *</label><input type="number" id="cDiscount" class="form-control" min="1" max="100" placeholder="20"></div>
+        <div class="form-group"><label class="form-label">Maks. użyć</label><input type="number" id="cMaxUses" class="form-control" value="1" min="1"></div>
+        <div class="form-group"><label class="form-label">Wygasa</label><input type="date" id="cExpires" class="form-control"></div>
       </div>
       <button class="btn btn-gold" onclick="createCoupon()">+ Utwórz kupon</button>
       <div id="couponAlert" style="margin-top:.8rem"></div>
     </div>
     <div class="card">
-      <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--text-bright);margin-bottom:1rem">Aktywne kupony</div>
       <div class="table-wrap">
         <table>
           <thead><tr><th>Kod</th><th>Rabat</th><th>Użycia</th><th>Wygasa</th><th>Akcje</th></tr></thead>
-          <tbody id="couponsBody"><tr><td colspan="5" style="color:var(--text-muted);text-align:center">Ładowanie...</td></tr></tbody>
+          <tbody id="couponsBody"></tbody>
         </table>
       </div>
     </div>
@@ -89,8 +120,8 @@
 
   <!-- CHAT TAB -->
   <div id="tab-chat" class="tab-content">
-    <div id="chatAdminContent"><div class="spinner"></div></div>
-    <div id="chatAdminBox" style="display:none;margin-top:1rem">
+    <div id="chatList"><div class="spinner"></div></div>
+    <div id="chatAdminBox" style="display:none;margin-top:1.5rem">
       <div style="font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold-light);margin-bottom:.8rem" id="chatAdminTitle"></div>
       <div class="chat-box">
         <div class="chat-messages" id="adminChatMessages"></div>
@@ -107,110 +138,215 @@
 <footer><p>⚔️ <strong style="color:var(--gold-light)">Patologiczne Expowisko</strong> — Panel Administratora</p></footer>
 <script src="/js/nav.js"></script>
 <script>
-let allBookings=[], currentFilter='all', adminChatBookingId=null, adminChatWs=null, myUserId=null;
+let allSlots=[], allBookings=[], slotFilter='all', bookingFilter='all';
+let adminChatBookingId=null, adminChatWs=null, myUserId=null;
 
-initNav('/admin').then(data=>{
-  if(!data.loggedIn||data.role!=='admin'){location.href='/';return;}
-  myUserId=data.userId;
-  loadBookings();
+// Set min date to today
+document.getElementById('newDate').min = new Date().toISOString().split('T')[0];
+
+// Auto-set max players based on type
+document.getElementById('newType').addEventListener('change', function(){
+  const map={solo:1,duo:2,trio:3};
+  document.getElementById('newMax').value=map[this.value]||1;
 });
 
-function showTab(tab, btn){
+initNav().then(data=>{
+  if(!data.loggedIn||data.role!=='admin'){location.href='/';return;}
+  myUserId=data.userId;
+  loadSlots();
+});
+
+function showTab(tab,btn){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   btn.classList.add('active');
   if(tab==='stats') loadStats();
   if(tab==='coupons') loadCoupons();
-  if(tab==='chat') loadAdminChats();
+  if(tab==='bookings') loadBookings();
+  if(tab==='chat') loadChatList();
+}
+
+// SLOTS
+async function loadSlots(){
+  allSlots=await fetch('/api/admin/slots').then(r=>r.json());
+  renderSlots();
+}
+
+function filterSlots(f,btn){
+  slotFilter=f;
+  document.querySelectorAll('#tab-slots .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderSlots();
+}
+
+function renderSlots(){
+  const today=new Date().toISOString().split('T')[0];
+  let filtered=allSlots;
+  if(slotFilter==='upcoming') filtered=allSlots.filter(s=>s.date>=today&&s.status==='open');
+  else if(slotFilter==='open') filtered=allSlots.filter(s=>s.spots_left>0&&s.status==='open');
+  else if(slotFilter==='full') filtered=allSlots.filter(s=>s.spots_left<=0);
+
+  const el=document.getElementById('slotsAdminList');
+  if(!filtered.length){el.innerHTML='<p style="color:var(--text-muted);text-align:center;padding:2rem">Brak slotów.</p>';return;}
+
+  el.innerHTML=filtered.map(s=>{
+    const icon=PKG_ICONS[s.package_type]||'⚔️';
+    const bookingsHtml=s.bookings.length?s.bookings.map(b=>`
+      <div class="booking-row">
+        <div>
+          <strong style="color:var(--text-bright)">${b.username}</strong>
+          — ${b.char_name} (${b.char_class} poz.${b.char_level})
+          ${b.contact_discord?`<span style="color:var(--gold-dim)"> 💬 ${b.contact_discord}</span>`:''}
+        </div>
+        <div style="display:flex;gap:.3rem;align-items:center">
+          <span class="badge ${STATUS_BADGES[b.status]||'badge-pending'}">${STATUS_LABELS[b.status]||b.status}</span>
+          ${b.status==='pending'?`<button class="btn btn-xs" style="background:#003020;color:#40d090;border:1px solid #006040" onclick="updateBooking(${b.id},'active')">✓</button><button class="btn btn-xs btn-danger" onclick="updateBooking(${b.id},'rejected')">✕</button>`:''}
+          ${b.status==='active'?`<button class="btn btn-xs" style="background:#001530;color:#4080f0;border:1px solid #003080" onclick="updateBooking(${b.id},'done')">Ukończ</button>`:''}
+          <button class="btn btn-xs btn-outline" onclick="openAdminChat(${b.id},'${b.username}')">💬</button>
+        </div>
+      </div>`).join(''):'<div style="color:var(--text-muted);font-size:.85rem;font-style:italic">Brak rezerwacji</div>';
+
+    return `<div class="slot-admin-card">
+      <div class="slot-header">
+        <div>
+          <div class="slot-title">${icon} ${s.package_name} · ${s.date} o ${s.time}</div>
+          <div style="color:var(--text-muted);font-size:.8rem;margin-top:.2rem">${s.booked_count}/${s.max_players} miejsc zajętych · ${s.price_sm?.toLocaleString()} SM/h${s.note?' · 📝 '+s.note:''}</div>
+        </div>
+        <div class="actions">
+          <span class="badge ${s.spots_left>0?'badge-open':'badge-full'}">${s.spots_left>0?s.spots_left+' wolne':'Pełny'}</span>
+          ${s.status==='open'?`<button class="btn btn-xs btn-outline" onclick="closeSlot(${s.id})">Zamknij</button>`:''}
+          <button class="btn btn-xs btn-danger" onclick="deleteSlot(${s.id})">🗑️</button>
+        </div>
+      </div>
+      <div>${bookingsHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+async function createSlot(){
+  const date=document.getElementById('newDate').value;
+  const time=document.getElementById('newTime').value;
+  const name=document.getElementById('newName').value.trim();
+  const type=document.getElementById('newType').value;
+  const max=document.getElementById('newMax').value;
+  const price=document.getElementById('newPrice').value;
+  const note=document.getElementById('newNote').value.trim();
+  const al=document.getElementById('slotAlert');
+  if(!date||!time||!name||!type||!max||!price){al.innerHTML='<div class="alert alert-error">Wypełnij wszystkie wymagane pola.</div>';return;}
+  const res=await fetch('/api/admin/slots',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({date,time,package_name:name,package_type:type,max_players:max,price_sm:price,note})
+  }).then(r=>r.json());
+  if(res.success){
+    al.innerHTML='<div class="alert alert-success">Slot dodany!</div>';
+    ['newDate','newTime','newName','newNote','newPrice'].forEach(id=>{document.getElementById(id).value='';});
+    document.getElementById('newType').value='solo';
+    document.getElementById('newMax').value='1';
+    loadSlots();
+    setTimeout(()=>al.innerHTML='',3000);
+  } else {
+    al.innerHTML=`<div class="alert alert-error">${res.error}</div>`;
+  }
+}
+
+async function closeSlot(id){
+  await fetch(`/api/admin/slots/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'closed'})});
+  loadSlots();
+}
+
+async function deleteSlot(id){
+  if(!confirm('Usunąć ten slot? Gracze zostaną powiadomieni.')) return;
+  await fetch(`/api/admin/slots/${id}`,{method:'DELETE'});
+  loadSlots();
 }
 
 // BOOKINGS
 async function loadBookings(){
   allBookings=await fetch('/api/admin/bookings').then(r=>r.json());
-  renderTable();
+  renderBookings();
 }
 
-function renderTable(){
-  const filtered=currentFilter==='all'?allBookings:allBookings.filter(b=>b.status===currentFilter);
-  const tbody=document.getElementById('tbody');
-  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem">Brak rezerwacji.</td></tr>`;return;}
+function filterBookings(f,btn){
+  bookingFilter=f;
+  document.querySelectorAll('#tab-bookings .filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBookings();
+}
+
+function renderBookings(){
+  const filtered=bookingFilter==='all'?allBookings:allBookings.filter(b=>b.status===bookingFilter);
+  const tbody=document.getElementById('bookingsBody');
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem">Brak rezerwacji.</td></tr>`;return;}
   tbody.innerHTML=filtered.map(b=>`
     <tr>
       <td style="color:var(--text-muted)">#${b.id}</td>
       <td>
-        <div style="color:var(--text-bright)">${PARTY_ICONS[b.party_size]||''} ${b.service_name}</div>
-        <div style="font-size:.75rem;color:var(--text-muted)">${b.members.length}/${b.party_size} graczy · ${b.price_sm?.toLocaleString()} SM/h</div>
+        <div style="color:var(--text-bright)">${PKG_ICONS[b.package_type]||''} ${b.package_name}</div>
+        <div style="font-size:.75rem;color:var(--text-muted)">${b.date} o ${b.time}</div>
       </td>
-      <td><div>${b.booked_date}</div><div style="color:var(--text-muted);font-size:.85rem">${b.booked_time}</div></td>
-      <td><div class="members-list">${b.members.map(m=>`<div>⚔️ <strong style="color:var(--text-bright)">${m.username}</strong> — ${m.char_name} (${m.char_class} poz.${m.char_level}→${m.target_level})${m.contact_discord?' 💬 '+m.contact_discord:''}</div>`).join('')||'<div style="font-style:italic">Brak graczy</div>'}</div></td>
+      <td><strong style="color:var(--text-bright)">${b.username}</strong></td>
+      <td>${b.char_name} (${b.char_class} poz.${b.char_level})</td>
+      <td style="color:var(--gold-dim)">${b.contact_discord}</td>
       <td><span class="badge ${STATUS_BADGES[b.status]}">${STATUS_LABELS[b.status]}</span></td>
       <td>
         <div class="actions">
-          ${b.status==='pending'?`<button class="btn btn-sm" style="background:#003020;color:#40d090;border:1px solid #006040" onclick="updateStatus(${b.id},'active')">Przyjmij</button><button class="btn btn-sm btn-danger" onclick="updateStatus(${b.id},'rejected')">Odrzuć</button>`:''}
-          ${b.status==='active'?`<button class="btn btn-sm" style="background:#001530;color:#4080f0;border:1px solid #003080" onclick="updateStatus(${b.id},'done')">Ukończ</button>`:''}
-          <button class="btn btn-sm btn-outline" onclick="openAdminChat(${b.id},'${b.service_name}')">💬</button>
-          <button class="btn btn-sm btn-danger" onclick="deleteBooking(${b.id})" title="Usuń">🗑️</button>
+          ${b.status==='pending'?`<button class="btn btn-xs" style="background:#003020;color:#40d090;border:1px solid #006040" onclick="updateBooking(${b.id},'active')">Przyjmij</button><button class="btn btn-xs btn-danger" onclick="updateBooking(${b.id},'rejected')">Odrzuć</button>`:''}
+          ${b.status==='active'?`<button class="btn btn-xs" style="background:#001530;color:#4080f0;border:1px solid #003080" onclick="updateBooking(${b.id},'done')">Ukończ</button>`:''}
+          <button class="btn btn-xs btn-outline" onclick="openAdminChat(${b.id},'${b.username}')">💬</button>
+          <button class="btn btn-xs btn-danger" onclick="deleteBooking(${b.id})">🗑️</button>
         </div>
       </td>
     </tr>`).join('');
 }
 
-function filterStatus(status,btn){
-  currentFilter=status;
-  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTable();
-}
-
-async function updateStatus(id,status){
+async function updateBooking(id,status){
   await fetch(`/api/admin/bookings/${id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});
-  loadBookings();
+  loadSlots();
+  if(document.getElementById('tab-bookings').classList.contains('active')) loadBookings();
 }
 
 async function deleteBooking(id){
-  if(!confirm('Czy na pewno chcesz usunąć tę rezerwację? Tej akcji nie można cofnąć.')) return;
+  if(!confirm('Usunąć tę rezerwację?')) return;
   await fetch(`/api/admin/bookings/${id}`,{method:'DELETE'});
+  loadSlots();
   loadBookings();
 }
 
 // STATS
 async function loadStats(){
   const s=await fetch('/api/admin/stats').then(r=>r.json());
-  const maxCount=Math.max(...s.byMonth.map(m=>m.count),1);
+  const maxCount=Math.max(...(s.byMonth||[]).map(m=>m.count),1);
   document.getElementById('statsContent').innerHTML=`
     <div class="grid-4" style="margin-bottom:1.5rem">
-      <div class="stat-card"><div class="stat-card-value">${s.totalBookings}</div><div class="stat-card-label">Wszystkich rezerwacji</div></div>
+      <div class="stat-card"><div class="stat-card-value">${s.totalSlots}</div><div class="stat-card-label">Wszystkich slotów</div></div>
+      <div class="stat-card"><div class="stat-card-value">${s.totalBookings}</div><div class="stat-card-label">Rezerwacji</div></div>
       <div class="stat-card"><div class="stat-card-value">${s.doneBookings}</div><div class="stat-card-label">Ukończonych</div></div>
-      <div class="stat-card"><div class="stat-card-value">${s.pendingBookings}</div><div class="stat-card-label">Oczekujących</div></div>
       <div class="stat-card"><div class="stat-card-value">${s.totalUsers}</div><div class="stat-card-label">Użytkowników</div></div>
     </div>
     <div class="grid-2">
       <div class="card">
-        <div style="font-family:'Cinzel',serif;font-size:.85rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1rem">Rezerwacje wg pakietu</div>
-        ${s.byService.map(sv=>`
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--border)">
-            <span style="color:var(--text)">${sv.name}</span>
-            <span style="color:var(--gold-light);font-family:'Cinzel',serif">${sv.count} rez.</span>
-          </div>`).join('')}
+        <div style="font-family:'Cinzel',serif;font-size:.8rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1rem">Wg pakietu (ukończone)</div>
+        ${(s.byPackage||[]).map(p=>`
+          <div style="display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid var(--border)">
+            <span>${PKG_ICONS[p.package_type]||''} ${p.package_name}</span>
+            <span style="color:var(--gold-light);font-family:'Cinzel',serif">${p.count}</span>
+          </div>`).join('')||'<p style="color:var(--text-muted)">Brak danych</p>'}
       </div>
       <div class="card">
-        <div style="font-family:'Cinzel',serif;font-size:.85rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem">Rezerwacje wg miesiąca</div>
+        <div style="font-family:'Cinzel',serif;font-size:.8rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem">Rezerwacje wg miesiąca</div>
         <div class="bar-chart">
-          ${s.byMonth.map(m=>`
+          ${(s.byMonth||[]).map(m=>`
             <div class="bar-col">
-              <div class="bar" style="height:${Math.round((m.count/maxCount)*100)}px" title="${m.count}"></div>
-              <div class="bar-label">${m.month?.slice(5)||''}<br>${m.count}</div>
+              <div class="bar" style="height:${Math.round((m.count/maxCount)*100)}px"></div>
+              <div class="bar-label">${(m.month||'').slice(5)}<br>${m.count}</div>
             </div>`).join('')}
         </div>
       </div>
     </div>
     <div class="card" style="margin-top:1.5rem;text-align:center">
-      <div style="font-family:'Cinzel',serif;font-size:.85rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem">Średnia ocena graczy</div>
-      <div style="font-size:2.5rem;color:var(--gold-light);font-family:'Cinzel',serif;font-weight:900">${s.avgRating > 0 ? s.avgRating + ' ⭐' : 'Brak ocen'}</div>
+      <div style="font-size:2.5rem;color:var(--gold-light);font-family:'Cinzel',serif;font-weight:900">${s.avgRating>0?s.avgRating+' ⭐':'Brak ocen'}</div>
       <div style="color:var(--text-muted);font-size:.85rem">na podstawie ${s.totalReviews} opinii</div>
-    </div>
-  `;
+    </div>`;
 }
 
 // COUPONS
@@ -219,78 +355,66 @@ async function loadCoupons(){
   document.getElementById('couponsBody').innerHTML=coupons.length?coupons.map(c=>`
     <tr>
       <td><strong style="color:var(--gold-light);font-family:'Cinzel',serif">${c.code}</strong></td>
-      <td>${c.discount_percent}%</td>
-      <td>${c.uses}/${c.max_uses}</td>
+      <td>${c.discount_percent}%</td><td>${c.uses}/${c.max_uses}</td>
       <td>${c.expires_at||'Bez limitu'}</td>
-      <td><button class="btn btn-danger btn-xs" onclick="deleteCoupon(${c.id})">Usuń</button></td>
+      <td><button class="btn btn-xs btn-danger" onclick="deleteCoupon(${c.id})">Usuń</button></td>
     </tr>`).join(''):`<tr><td colspan="5" style="color:var(--text-muted);text-align:center;padding:1rem">Brak kuponów.</td></tr>`;
 }
 
 async function createCoupon(){
-  const code=document.getElementById('newCouponCode').value.trim();
-  const discount=document.getElementById('newCouponDiscount').value;
-  const maxUses=document.getElementById('newCouponMaxUses').value;
-  const expires=document.getElementById('newCouponExpires').value;
   const res=await fetch('/api/admin/coupons',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({code,discount_percent:discount,max_uses:maxUses,expires_at:expires||null})
+    body:JSON.stringify({code:document.getElementById('cCode').value,discount_percent:document.getElementById('cDiscount').value,max_uses:document.getElementById('cMaxUses').value,expires_at:document.getElementById('cExpires').value||null})
   }).then(r=>r.json());
   const al=document.getElementById('couponAlert');
   if(res.success){al.innerHTML='<div class="alert alert-success">Kupon utworzony!</div>';loadCoupons();}
   else al.innerHTML=`<div class="alert alert-error">${res.error}</div>`;
 }
 
-async function deleteCoupon(id){
-  await fetch('/api/admin/coupons/'+id,{method:'DELETE'});
-  loadCoupons();
-}
+async function deleteCoupon(id){ await fetch('/api/admin/coupons/'+id,{method:'DELETE'}); loadCoupons(); }
 
-// ADMIN CHAT
-async function loadAdminChats(){
+// CHAT
+async function loadChatList(){
   const bookings=await fetch('/api/admin/bookings').then(r=>r.json());
-  const el=document.getElementById('chatAdminContent');
+  const el=document.getElementById('chatList');
   if(!bookings.length){el.innerHTML='<p style="color:var(--text-muted)">Brak rezerwacji.</p>';return;}
-  el.innerHTML=`<div class="grid-2">${bookings.filter(b=>b.status!=='deleted').map(b=>`
-    <div class="card" style="cursor:pointer" onclick="openAdminChat(${b.id},'${b.service_name}')">
-      <div style="font-family:'Cinzel',serif;font-size:.9rem;color:var(--text-bright);margin-bottom:.3rem">${PARTY_ICONS[b.party_size]||''} ${b.service_name} #${b.id}</div>
-      <div style="color:var(--text-muted);font-size:.8rem">${b.booked_date} o ${b.booked_time}</div>
-      <div style="color:var(--text-muted);font-size:.75rem;margin-top:.3rem">${b.members.map(m=>m.username).join(', ')}</div>
+  el.innerHTML=`<div class="grid-3">${bookings.filter(b=>b.status!=='cancelled').map(b=>`
+    <div class="card" style="cursor:pointer" onclick="openAdminChat(${b.id},'${b.username}')">
+      <div style="font-family:'Cinzel',serif;font-size:.9rem;color:var(--text-bright);margin-bottom:.3rem">${PKG_ICONS[b.package_type]||''} ${b.package_name} #${b.id}</div>
+      <div style="color:var(--text-muted);font-size:.8rem">${b.date} o ${b.time}</div>
+      <div style="color:var(--text-muted);font-size:.75rem;margin-top:.2rem">👤 ${b.username} · 💬 ${b.contact_discord}</div>
       <div style="margin-top:.8rem"><button class="btn btn-outline btn-sm">💬 Otwórz czat</button></div>
     </div>`).join('')}</div>`;
 }
 
-async function openAdminChat(bookingId, name){
+async function openAdminChat(bookingId,username){
   adminChatBookingId=bookingId;
-  document.getElementById('chatAdminTitle').textContent='💬 Czat z graczami — '+name+' #'+bookingId;
+  document.getElementById('chatAdminTitle').textContent='💬 Czat z '+username+' — rezerwacja #'+bookingId;
   document.getElementById('adminChatMessages').innerHTML='';
   document.getElementById('chatAdminBox').style.display='';
-
-  // Switch to chat tab if not there
+  // Switch to chat tab
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('tab-chat').classList.add('active');
-  document.querySelectorAll('.tab-btn')[3].classList.add('active');
-
+  document.querySelectorAll('.tab-btn')[4].classList.add('active');
+  await loadChatList();
   const msgs=await fetch('/api/chat/'+bookingId).then(r=>r.json()).catch(()=>[]);
-  msgs.forEach(m=>appendAdminMsg(m));
-
+  msgs.forEach(appendAdminMsg);
   if(adminChatWs) adminChatWs.close();
   const proto=location.protocol==='https:'?'wss':'ws';
   adminChatWs=new WebSocket(proto+'://'+location.host);
   adminChatWs.onopen=()=>adminChatWs.send(JSON.stringify({type:'join',bookingId,username:'Admin',isAdmin:true}));
-  adminChatWs.onmessage=e=>{ const d=JSON.parse(e.data); if(d.type==='message'&&d.data.booking_id==bookingId) appendAdminMsg(d.data); };
+  adminChatWs.onmessage=e=>{ const d=JSON.parse(e.data); if(d.type==='message'&&String(d.data.booking_id)===String(bookingId)) appendAdminMsg(d.data); };
 }
 
 function appendAdminMsg(m){
   const el=document.getElementById('adminChatMessages');
   const isMine=m.user_id===myUserId;
-  const isAdmin=m.is_admin;
-  const cls=isMine?'mine':isAdmin?'admin':'other';
+  const cls=isMine?'mine':m.is_admin?'admin':'other';
   const time=new Date(m.created_at).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
   const div=document.createElement('div');
   div.className='chat-msg '+cls;
-  div.innerHTML=`<div>${m.message}</div><div class="chat-msg-meta">${isAdmin?'🛡️ Ekipa':'👤 '+m.username} · ${time}</div>`;
-  el.appendChild(div);
-  el.scrollTop=el.scrollHeight;
+  div.innerHTML=`<div>${m.message}</div><div class="chat-msg-meta">${m.is_admin?'🛡️ Ekipa':'👤 '+m.username} · ${time}</div>`;
+  el.appendChild(div); el.scrollTop=el.scrollHeight;
 }
 
 async function sendAdminMsg(){

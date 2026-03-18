@@ -21,12 +21,12 @@
   </div>
 </div>
 <script>
-  const redirect = new URLSearchParams(location.search).get('redirect') || '/';
-  document.addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-  async function doLogin() {
-    const btn = document.getElementById('loginBtn');
-    btn.disabled=true; btn.textContent='Logowanie...';
-    const res = await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},
+  const redirect=new URLSearchParams(location.search).get('redirect')||'/';
+  document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+  async function doLogin(){
+    const btn=document.getElementById('loginBtn');
+    btn.disabled=true;btn.textContent='Logowanie...';
+    const res=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({username:document.getElementById('username').value,password:document.getElementById('password').value,redirect})
     }).then(r=>r.json());
     if(res.success){location.href=res.redirect;}

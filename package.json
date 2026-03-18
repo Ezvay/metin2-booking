@@ -1,6 +1,6 @@
 {
   "name": "patologiczne-expowisko",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "System rezerwacji expienia - Patologiczne Expowisko Metin2",
   "main": "server.js",
   "scripts": {

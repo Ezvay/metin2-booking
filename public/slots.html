@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dostępne Terminy — Patologiczne Expowisko</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .day-group{margin-bottom:2.5rem;}
+    .day-label{font-family:'Cinzel',serif;font-size:.85rem;color:var(--gold);letter-spacing:.15em;text-transform:uppercase;padding:.6rem 0;border-bottom:2px solid var(--border);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
+  </style>
+</head>
+<body>
+<div class="chunjo-banner">
+  <span class="chunjo-flag"><svg viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg></span>
+  <strong style="color:var(--gold-light);letter-spacing:.2em">CHUNJO</strong> — Patologiczne Expowisko
+</div>
+<nav>
+  <a class="nav-logo" href="/">⚔️ Patologiczne <span>Expowisko</span></a>
+  <div class="nav-links">
+    <a href="/">Strona główna</a>
+    <a href="/slots" class="active">📅 Dostępne terminy</a>
+    <a href="/dashboard" id="navDashboard" style="display:none">Moje rezerwacje</a>
+    <a href="/admin" id="navAdmin" style="display:none">Admin</a>
+    <span id="navUser" style="color:var(--gold-light);font-family:'Cinzel',serif;font-size:.8rem;display:none"></span>
+    <form action="/logout" method="post" style="display:none" id="logoutForm"><button class="btn btn-outline btn-sm">Wyloguj</button></form>
+    <a href="/login" class="btn btn-outline btn-sm" id="navLogin">Zaloguj</a>
+    <a href="/register" class="btn btn-gold btn-sm" id="navRegister">Zarejestruj</a>
+  </div>
+</nav>
+<main>
+<div class="page-wrap">
+  <div class="page-header">
+    <h1 class="page-title">Dostępne <span>Terminy</span></h1>
+  </div>
+  <p style="color:var(--text-muted);font-style:italic;margin-bottom:1.5rem">Ekipa dodaje dostępne sloty — wybierz termin który Ci odpowiada i zarezerwuj miejsce.</p>
+
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="setFilter('all',this)">Wszystkie</button>
+    <button class="filter-btn" onclick="setFilter('solo',this)">🗡️ Solo</button>
+    <button class="filter-btn" onclick="setFilter('duo',this)">⚔️ Duo</button>
+    <button class="filter-btn" onclick="setFilter('trio',this)">🔱 Trio</button>
+    <button class="filter-btn" onclick="setFilter('open',this)">🟢 Wolne miejsca</button>
+  </div>
+
+  <div id="slotsContent"><div class="spinner"></div></div>
+</div>
+</main>
+
+<!-- BOOK MODAL -->
+<div class="modal-overlay" id="bookModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">⚔️ Rezerwacja terminu</div>
+    <div id="bookSlotInfo" style="background:#0a0e1a;border-radius:4px;padding:.8rem;margin-bottom:1.2rem;font-size:.9rem;color:var(--text-muted)"></div>
+    <div id="bookAlert"></div>
+    <div class="form-group">
+      <label class="form-label">Nazwa postaci *</label>
+      <input type="text" id="bCharName" class="form-control" placeholder="NazwaPostaci">
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Klasa *</label>
+        <select id="bCharClass" class="form-control">
+          <option value="">— wybierz —</option>
+          <option>Wojownik</option>
+          <option>Ninja</option>
+          <option>Szaman</option>
+          <option>Sura</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Aktualny poziom *</label>
+        <input type="number" id="bCharLevel" class="form-control" min="1" max="120" placeholder="np. 55">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nick Discord *</label>
+      <input type="text" id="bDiscord" class="form-control" placeholder="TwójNick#0000">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Kupon rabatowy (opcjonalne)</label>
+      <div class="coupon-input-row">
+        <input type="text" id="bCouponCode" class="form-control" placeholder="KOD-RABATU" style="text-transform:uppercase">
+        <button class="btn btn-outline btn-sm" onclick="checkCoupon()">Sprawdź</button>
+      </div>
+      <div id="couponResult" style="margin-top:.4rem"></div>
+    </div>
+    <button class="btn btn-gold" style="width:100%" id="bookBtn" onclick="submitBooking()">⚔️ Zarezerwuj miejsce</button>
+  </div>
+</div>
+
+<footer><p>⚔️ <strong style="color:var(--gold-light)">Patologiczne Expowisko</strong> — Metin2 Leveling dla Chunjo</p></footer>
+<script src="/js/nav.js"></script>
+<script>
+let slots=[], currentFilter='all', currentUser=null, selectedSlotId=null, appliedCoupon=null;
+
+initNav().then(d=>{ currentUser=d; loadSlots(); });
+
+async function loadSlots(){
+  slots = await fetch('/api/slots').then(r=>r.json());
+  render();
+}
+
+function setFilter(f, btn){
+  currentFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function render(){
+  const el=document.getElementById('slotsContent');
+  let filtered=slots;
+  if(currentFilter==='solo') filtered=slots.filter(s=>s.package_type==='solo');
+  else if(currentFilter==='duo') filtered=slots.filter(s=>s.package_type==='duo');
+  else if(currentFilter==='trio') filtered=slots.filter(s=>s.package_type==='trio');
+  else if(currentFilter==='open') filtered=slots.filter(s=>s.spots_left>0);
+
+  if(!filtered.length){
+    el.innerHTML=`<div style="text-align:center;padding:4rem;color:var(--text-muted)">
+      <p style="font-size:3rem;margin-bottom:1rem">📭</p>
+      <p>Brak dostępnych terminów w tej chwili.</p>
+      <p style="margin-top:.5rem;font-size:.9rem">Sprawdź ponownie później lub obserwuj nasz Discord.</p>
+    </div>`;
+    return;
+  }
+
+  // Group by date
+  const byDate={};
+  filtered.forEach(s=>{
+    if(!byDate[s.date]) byDate[s.date]=[];
+    byDate[s.date].push(s);
+  });
+
+  el.innerHTML=Object.entries(byDate).map(([date,daySlots])=>{
+    const d=new Date(date+'T00:00:00');
+    const dayStr=d.toLocaleDateString('pl-PL',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    const isToday=date===new Date().toISOString().split('T')[0];
+    return `
+      <div class="day-group">
+        <div class="day-label">📅 ${dayStr}${isToday?' <span style="background:var(--gold);color:#1a1000;padding:.1rem .4rem;border-radius:3px;font-size:.65rem">DZIŚ</span>':''}</div>
+        <div class="grid-3">${daySlots.map(s=>renderSlot(s)).join('')}</div>
+      </div>`;
+  }).join('');
+}
+
+function renderSlot(s){
+  const isFull=s.spots_left<=0;
+  const icon=PKG_ICONS[s.package_type]||'⚔️';
+  const alreadyBooked=s.bookings&&s.bookings.some(b=>b.username===currentUser?.username);
+
+  let dots='';
+  for(let i=0;i<s.max_players;i++){
+    const b=s.bookings&&s.bookings[i];
+    if(b) dots+=`<div class="player-dot taken" title="${b.char_name} (${b.char_class} poz.${b.char_level})">⚔️</div>`;
+    else dots+=`<div class="player-dot empty">?</div>`;
+  }
+
+  let actionBtn='';
+  if(alreadyBooked) actionBtn=`<span class="badge badge-active" style="font-size:.7rem">✓ Zapisany</span>`;
+  else if(!isFull && currentUser?.loggedIn) actionBtn=`<button class="btn btn-gold btn-sm" onclick="openBook(${s.id},'${s.package_name}','${s.date}','${s.time}',${s.price_sm},${s.spots_left})">Zarezerwuj</button>`;
+  else if(!isFull && !currentUser?.loggedIn) actionBtn=`<a href="/login?redirect=/slots" class="btn btn-outline btn-sm">Zaloguj się</a>`;
+  else actionBtn=`<span class="badge badge-full">Pełny</span>`;
+
+  return `
+    <div class="slot-card ${isFull&&!alreadyBooked?'full':''}">
+      <div class="slot-date">${icon} ${s.package_name}</div>
+      <div class="slot-time">${s.time}</div>
+      <div class="slot-package">${s.price_sm.toLocaleString()} SM/h · Poz. 45–75</div>
+      <div class="slot-players">${dots}</div>
+      ${s.note?`<div style="font-size:.8rem;color:var(--text-muted);font-style:italic;margin-bottom:.8rem">📝 ${s.note}</div>`:''}
+      <div class="slot-meta">
+        <span class="badge ${isFull?'badge-full':'badge-open'}">${isFull?'Pełny':s.spots_left+' wolne'}</span>
+        ${actionBtn}
+      </div>
+    </div>`;
+}
+
+function openBook(id, name, date, time, price, spots){
+  selectedSlotId=id; appliedCoupon=null;
+  document.getElementById('bookSlotInfo').innerHTML=`
+    <strong style="color:var(--text-bright)">${name}</strong><br>
+    📅 ${date} o ${time} &nbsp;·&nbsp; 💰 ${price.toLocaleString()} SM/h &nbsp;·&nbsp; 🟢 ${spots} wolne miejsce(a)`;
+  document.getElementById('bookAlert').innerHTML='';
+  document.getElementById('couponResult').innerHTML='';
+  ['bCharName','bCouponCode'].forEach(id=>{ document.getElementById(id).value=''; });
+  document.getElementById('bCharClass').value='';
+  document.getElementById('bCharLevel').value='';
+  document.getElementById('bDiscord').value='';
+  document.getElementById('bookBtn').disabled=false;
+  document.getElementById('bookBtn').textContent='⚔️ Zarezerwuj miejsce';
+  document.getElementById('bookModal').classList.add('open');
+}
+
+function closeModal(){ document.getElementById('bookModal').classList.remove('open'); selectedSlotId=null; }
+document.getElementById('bookModal').addEventListener('click',e=>{if(e.target===document.getElementById('bookModal'))closeModal();});
+
+async function checkCoupon(){
+  const code=document.getElementById('bCouponCode').value.trim();
+  if(!code) return;
+  const res=await fetch('/api/coupons/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})}).then(r=>r.json());
+  const el=document.getElementById('couponResult');
+  if(res.valid){ appliedCoupon=res.code; el.innerHTML=`<div class="coupon-badge">🏷️ Rabat ${res.discount}% zastosowany!</div>`; }
+  else{ appliedCoupon=null; el.innerHTML=`<div class="alert alert-error" style="margin:0;padding:.4rem .8rem">${res.error}</div>`; }
+}
+
+async function submitBooking(){
+  const alertEl=document.getElementById('bookAlert');
+  const btn=document.getElementById('bookBtn');
+  const charName=document.getElementById('bCharName').value.trim();
+  const charClass=document.getElementById('bCharClass').value;
+  const charLevel=document.getElementById('bCharLevel').value;
+  const discord=document.getElementById('bDiscord').value.trim();
+  if(!charName||!charClass||!charLevel||!discord){
+    alertEl.innerHTML='<div class="alert alert-error">Wypełnij wszystkie wymagane pola.</div>';return;
+  }
+  btn.disabled=true; btn.textContent='Rezerwowanie...';
+  const res=await fetch(`/api/slots/${selectedSlotId}/book`,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({char_name:charName,char_class:charClass,char_level:charLevel,contact_discord:discord,coupon_code:appliedCoupon})
+  }).then(r=>r.json());
+
+  if(res.success){
+    const statusUrl=location.origin+'/status?token='+res.statusToken;
+    document.querySelector('.modal-title').textContent='🎉 Rezerwacja złożona!';
+    document.getElementById('bookSlotInfo').style.display='none';
+    document.getElementById('bookAlert').innerHTML='';
+    document.getElementById('bookBtn').style.display='none';
+    document.querySelector('.modal').innerHTML=`
+      <button class="modal-close" onclick="closeModal();location.reload()">✕</button>
+      <div class="modal-title">🎉 Rezerwacja złożona!</div>
+      <p style="color:var(--text-muted);margin-bottom:1.5rem">Ekipa potwierdzi przez Discord. Zapisz poniższy link — możesz sprawdzić status bez logowania.</p>
+      <div style="background:#0a0e1a;border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:1.5rem">
+        <div style="font-family:'Cinzel',serif;font-size:.7rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.5rem">🔗 Link do statusu</div>
+        <div style="color:var(--gold-light);font-size:.85rem;word-break:break-all">${statusUrl}</div>
+        <button class="btn btn-outline btn-sm" style="margin-top:.8rem" onclick="navigator.clipboard.writeText('${statusUrl}');this.textContent='✅ Skopiowano!'">📋 Kopiuj link</button>
+      </div>
+      <a href="/dashboard" class="btn btn-gold" style="width:100%">📋 Moje rezerwacje</a>
+    `;
+    await loadSlots();
+  } else {
+    alertEl.innerHTML=`<div class="alert alert-error">${res.error}</div>`;
+    btn.disabled=false; btn.textContent='⚔️ Zarezerwuj miejsce';
+  }
+}
+</script>
+</body>
+</html>

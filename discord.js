@@ -29,27 +29,29 @@ function apiRequest(method, path, body) {
 
 async function sendBookingNotification(opts) {
   if (!TOKEN || !CHANNEL_ID) return;
-  const partyNames = { 1: 'Solo', 2: 'Duo', 3: 'Trio' };
+
   const typeLabels = {
     new_booking: 'NOWA REZERWACJA',
-    joined_party: 'DOLACZYL DO PARTY',
     cancelled: 'ANULOWANO REZERWACJE',
-    status_change: 'ZMIANA STATUSU'
+    joined: 'DOLACZYL DO SLOTU'
   };
-  const colors = { new_booking: 0xf5c800, joined_party: 0x40d090, cancelled: 0xff4444, status_change: 0x4080ff };
+  const colors = {
+    new_booking: 0xf5c800,
+    cancelled: 0xff4444,
+    joined: 0x40d090
+  };
 
   const fields = [
-    { name: 'Pakiet', value: opts.serviceName + ' (' + (partyNames[opts.partySize] || '') + ')', inline: true },
+    { name: 'Pakiet', value: opts.packageName, inline: true },
     { name: 'Termin', value: opts.date + ' o ' + opts.time, inline: true },
-    { name: 'Gracz', value: opts.username, inline: true },
-    { name: 'Postac', value: opts.charName + ' (' + opts.charClass + ')', inline: true },
-    { name: 'Poziomy', value: opts.charLevel + ' -> ' + opts.targetLevel, inline: true }
+    { name: 'Miejsc', value: opts.spotsLeft + '/' + opts.maxPlayers + ' wolnych', inline: true },
+    { name: 'Gracz (konto)', value: opts.username, inline: true },
+    { name: 'Postac', value: opts.charName + ' (' + opts.charClass + ' poz.' + opts.charLevel + ')', inline: true },
+    { name: 'Discord gracza', value: opts.discord || 'brak', inline: true }
   ];
-  if (opts.discord) fields.push({ name: 'Discord', value: opts.discord, inline: true });
-  if (opts.note) fields.push({ name: 'Uwagi', value: opts.note });
-  if (opts.statusLabel) fields.push({ name: 'Nowy status', value: opts.statusLabel, inline: true });
+  if (opts.note) fields.push({ name: 'Uwagi slotu', value: opts.note });
 
-  const showButtons = opts.type === 'new_booking' || opts.type === 'joined_party';
+  const showButtons = opts.type === 'new_booking' || opts.type === 'joined';
   const components = showButtons ? [{
     type: 1,
     components: [
@@ -63,7 +65,7 @@ async function sendBookingNotification(opts) {
       title: typeLabels[opts.type] || 'POWIADOMIENIE',
       color: colors[opts.type] || 0xf5c800,
       fields: fields,
-      footer: { text: 'ID rezerwacji: #' + opts.bookingId },
+      footer: { text: 'Rezerwacja #' + opts.bookingId + ' | Slot #' + opts.slotId },
       timestamp: new Date().toISOString()
     }],
     components: components
@@ -80,15 +82,24 @@ async function handleInteraction(interaction, db) {
 
   const bookingId = custom_id.replace('accept_', '').replace('reject_', '');
   const newStatus = isAccept ? 'active' : 'rejected';
-  const label = isAccept ? 'Przyjeto przez' : 'Odrzucono przez';
   const color = isAccept ? 0x40d090 : 0xff4444;
+  const label = isAccept ? 'Przyjeto przez' : 'Odrzucono przez';
 
   const clicker = (interaction.member && interaction.member.nick) ||
                   (interaction.member && interaction.member.user && interaction.member.user.username) ||
-                  (interaction.user && interaction.user.username) ||
-                  'Nieznany';
+                  (interaction.user && interaction.user.username) || 'Nieznany';
 
   await db.run2('UPDATE bookings SET status=? WHERE id=?', [newStatus, bookingId]);
+
+  // Get booking info for the confirmation message
+  const booking = await db.get2(`
+    SELECT b.*, s.date, s.time, s.package_name FROM bookings b
+    JOIN slots s ON b.slot_id = s.id WHERE b.id=?
+  `, [bookingId]);
+
+  const confirmMsg = isAccept && booking
+    ? '\n\n**Napisz do gracza na Discordzie:**\n`' + (booking.contact_discord || 'brak nicka') + '`\n\n📋 Treść:\n> Hej! Twoja rezerwacja **' + booking.package_name + '** na **' + booking.date + ' o ' + booking.time + '** została potwierdzona! Do zobaczenia w grze ⚔️'
+    : '';
 
   const originalEmbed = interaction.message && interaction.message.embeds && interaction.message.embeds[0];
   const originalFields = (originalEmbed && originalEmbed.fields) || [];
@@ -100,6 +111,7 @@ async function handleInteraction(interaction, db) {
         title: (originalEmbed && originalEmbed.title) || 'Rezerwacja',
         color: color,
         fields: originalFields.concat([{ name: label, value: clicker, inline: true }]),
+        description: confirmMsg,
         footer: originalEmbed && originalEmbed.footer,
         timestamp: originalEmbed && originalEmbed.timestamp
       }],
@@ -114,4 +126,4 @@ async function handleInteraction(interaction, db) {
   };
 }
 
-module.exports = { sendBookingNotification: sendBookingNotification, handleInteraction: handleInteraction };
+module.exports = { sendBookingNotification, handleInteraction };

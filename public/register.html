@@ -22,7 +22,7 @@
   </div>
 </div>
 <script>
-  async function doRegister() {
+  async function doRegister(){
     const btn=document.getElementById('regBtn');
     btn.disabled=true;btn.textContent='Rejestracja...';
     const res=await fetch('/register',{method:'POST',headers:{'Content-Type':'application/json'},

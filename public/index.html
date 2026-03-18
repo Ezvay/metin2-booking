@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Patologiczne Expowisko — Rezerwacje Expienia</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -16,8 +15,7 @@
   <a class="nav-logo" href="/">⚔️ Patologiczne <span>Expowisko</span></a>
   <div class="nav-links">
     <a href="/" class="active">Strona główna</a>
-    <a href="/calendar">Kalendarz</a>
-    <a href="/book">Rezerwuj</a>
+    <a href="/slots">📅 Dostępne terminy</a>
     <a href="/dashboard" id="navDashboard" style="display:none">Moje rezerwacje</a>
     <a href="/admin" id="navAdmin" style="display:none">Admin</a>
     <span id="navUser" style="color:var(--gold-light);font-family:'Cinzel',serif;font-size:.8rem;display:none"></span>
@@ -34,24 +32,49 @@
       <svg width="20" height="14" viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg" style="border:1px solid var(--chunjo-border);border-radius:2px"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg>
     </p>
     <h1 class="hero-title">Patologiczne<br><span>Expowisko</span></h1>
-    <p class="hero-sub">Profesjonalne expienie dla graczy Chunjo. Szybko, tanio, bez bólu głowy.</p>
+    <p class="hero-sub">Wybierz dostępny termin i zarezerwuj miejsce. Szybko, tanio, bez stresu.</p>
     <div class="hero-cta">
-      <a href="/book" class="btn btn-gold">⚔️ Zarezerwuj teraz</a>
-      <a href="/calendar" class="btn btn-outline">📅 Kalendarz rezerwacji</a>
+      <a href="/slots" class="btn btn-gold">📅 Zobacz dostępne terminy</a>
+      <a href="/register" class="btn btn-outline" id="heroRegister">Zarejestruj się</a>
     </div>
     <div class="stats-bar">
-      <div class="stat"><div class="stat-value">3</div><div class="stat-label">Pakiety</div></div>
+      <div class="stat"><div class="stat-value" id="statSlots">—</div><div class="stat-label">Dostępnych terminów</div></div>
       <div class="stat"><div class="stat-value">45–75</div><div class="stat-label">Poziomy</div></div>
-      <div class="stat"><div class="stat-value" id="avgRating">⭐</div><div class="stat-label">Średnia ocena</div></div>
+      <div class="stat"><div class="stat-value" id="statRating">⭐</div><div class="stat-label">Średnia ocena</div></div>
       <div class="stat"><div class="stat-value">Chunjo</div><div class="stat-label">Królestwo</div></div>
     </div>
   </section>
 
-  <section class="section" id="services">
+  <section class="section">
     <div class="container">
-      <h2 class="section-title">Dostępne <span>Pakiety</span></h2>
-      <p class="section-sub">Poziomy 45–75 · Płatność w Smoczych Monetach</p>
-      <div class="grid-3" id="servicesList"><div class="spinner"></div></div>
+      <h2 class="section-title">Jak to <span>Działa?</span></h2>
+      <p class="section-sub">Prosty system — my dodajemy terminy, Ty je buokujesz</p>
+      <div class="grid-2">
+        <div class="card fade-up" style="animation-delay:.1s">
+          <div style="display:flex;gap:1.2rem;align-items:flex-start">
+            <div style="font-family:'Cinzel',serif;font-size:2rem;font-weight:900;color:var(--gold-dim);line-height:1">01</div>
+            <div><div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--text-bright);margin-bottom:.3rem">Zarejestruj konto</div><div style="color:var(--text-muted);font-size:.9rem">Stwórz darmowe konto w 30 sekund.</div></div>
+          </div>
+        </div>
+        <div class="card fade-up" style="animation-delay:.2s">
+          <div style="display:flex;gap:1.2rem;align-items:flex-start">
+            <div style="font-family:'Cinzel',serif;font-size:2rem;font-weight:900;color:var(--gold-dim);line-height:1">02</div>
+            <div><div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--text-bright);margin-bottom:.3rem">Wybierz termin</div><div style="color:var(--text-muted);font-size:.9rem">Przeglądaj dostępne sloty dodane przez ekipę.</div></div>
+          </div>
+        </div>
+        <div class="card fade-up" style="animation-delay:.3s">
+          <div style="display:flex;gap:1.2rem;align-items:flex-start">
+            <div style="font-family:'Cinzel',serif;font-size:2rem;font-weight:900;color:var(--gold-dim);line-height:1">03</div>
+            <div><div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--text-bright);margin-bottom:.3rem">Podaj dane postaci</div><div style="color:var(--text-muted);font-size:.9rem">Nazwa postaci, klasa, poziom i nick Discord.</div></div>
+          </div>
+        </div>
+        <div class="card fade-up" style="animation-delay:.4s">
+          <div style="display:flex;gap:1.2rem;align-items:flex-start">
+            <div style="font-family:'Cinzel',serif;font-size:2rem;font-weight:900;color:var(--gold-dim);line-height:1">04</div>
+            <div><div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--text-bright);margin-bottom:.3rem">Gotowe!</div><div style="color:var(--text-muted);font-size:.9rem">Ekipa potwierdzi przez Discord. Link statusu dostaniesz od razu.</div></div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -62,51 +85,29 @@
       <div id="reviewsList"><div class="spinner"></div></div>
     </div>
   </section>
-
-  <section class="section">
-    <div class="container">
-      <h2 class="section-title">Jak to <span>Działa?</span></h2>
-      <p class="section-sub">Prosty proces — możesz też dołączyć do istniejącego party!</p>
-      <div class="grid-2">
-        <div class="card fade-up" style="animation-delay:.1s"><div class="how-step"><div class="step-num">01</div><div><div class="step-title">Zarejestruj konto</div><div class="step-desc">Stwórz darmowe konto na stronie.</div></div></div></div>
-        <div class="card fade-up" style="animation-delay:.2s"><div class="how-step"><div class="step-num">02</div><div><div class="step-title">Sprawdź kalendarz</div><div class="step-desc">Zobacz dostępne terminy i otwarte party.</div></div></div></div>
-        <div class="card fade-up" style="animation-delay:.3s"><div class="how-step"><div class="step-num">03</div><div><div class="step-title">Zarezerwuj lub dołącz</div><div class="step-desc">Stwórz nową rezerwację lub dołącz do Duo/Trio.</div></div></div></div>
-        <div class="card fade-up" style="animation-delay:.4s"><div class="how-step"><div class="step-num">04</div><div><div class="step-title">Śledź status</div><div class="step-desc">Link do statusu rezerwacji — bez logowania!</div></div></div></div>
-      </div>
-    </div>
-  </section>
 </main>
 <footer><p>⚔️ <strong style="color:var(--gold-light)">Patologiczne Expowisko</strong> — Metin2 Leveling dla Chunjo · Nie jesteśmy oficjalną stroną serwera Projekt Hard.</p></footer>
 <script src="/js/nav.js"></script>
 <script>
-  initNav('/');
-  const icons = ['🗡️','⚔️','🔱'];
-  const pLabels = ['Solo','Duo','Trio'];
+  initNav().then(d => {
+    if(d.loggedIn) { const r=document.getElementById('heroRegister'); if(r) r.style.display='none'; }
+  });
 
-  fetch('/api/services').then(r=>r.json()).then(services=>{
-    document.getElementById('servicesList').innerHTML = services.map((s,i)=>`
-      <div class="service-card" onclick="location.href='/book?service=${s.id}'">
-        <div class="service-levels">Poziom ${s.level_from}–${s.level_to} · ${pLabels[i]||''}</div>
-        <div class="service-name">${icons[i]||'⚔️'} ${s.name}</div>
-        <div class="service-desc">${s.description}</div>
-        <div class="service-meta">
-          <div class="service-price">${s.price_sm.toLocaleString()} <small>SM/h od osoby</small></div>
-          <span style="color:var(--text-muted);font-size:.85rem">maks. ${s.party_size} os.</span>
-        </div>
-      </div>`).join('');
+  fetch('/api/slots').then(r=>r.json()).then(slots=>{
+    document.getElementById('statSlots').textContent = slots.filter(s=>s.spots_left>0).length;
   });
 
   fetch('/api/reviews').then(r=>r.json()).then(reviews=>{
-    const el = document.getElementById('reviewsList');
-    if (!reviews.length) { el.innerHTML = '<p style="text-align:center;color:var(--text-muted);font-style:italic">Brak opinii. Bądź pierwszy!</p>'; return; }
-    el.innerHTML = `<div class="grid-2">${reviews.slice(0,4).map(r=>`
+    const el=document.getElementById('reviewsList');
+    if(!reviews.length){el.innerHTML='<p style="text-align:center;color:var(--text-muted);font-style:italic">Brak opinii. Bądź pierwszy!</p>';return;}
+    const avg=reviews.reduce((a,r)=>a+r.rating,0)/reviews.length;
+    document.getElementById('statRating').textContent=avg.toFixed(1)+' ⭐';
+    el.innerHTML=`<div class="grid-2">${reviews.slice(0,4).map(r=>`
       <div class="review-card">
-        <div class="review-rating">${'⭐'.repeat(r.rating)}</div>
-        <div class="review-comment">"${r.comment || 'Brak komentarza'}"</div>
-        <div class="review-meta">— ${r.username} · ${r.service_name}</div>
+        <div style="color:var(--gold-light);margin-bottom:.4rem">${'⭐'.repeat(r.rating)}</div>
+        <div style="color:var(--text);margin-bottom:.4rem">"${r.comment||'Brak komentarza'}"</div>
+        <div style="color:var(--text-muted);font-size:.8rem">— ${r.username} · ${r.package_name}</div>
       </div>`).join('')}</div>`;
-    const avg = reviews.reduce((a,r)=>a+r.rating,0)/reviews.length;
-    document.getElementById('avgRating').textContent = avg.toFixed(1) + ' ⭐';
   });
 </script>
 </body>
