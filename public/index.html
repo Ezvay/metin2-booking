@@ -176,11 +176,11 @@
 let slots=[], filter='all', selectedSlotId=null, selectedPkg=null, selectedEq='none';
 
 const TEAM = [
-  { display: 'Ezvay',    nick: 'ezvay',           id: '269140484721475606' },
-  { display: 'Prezes',   nick: 'prezesjaroslaw_',  id: '743808864981352559' },
-  { display: 'Jarek',    nick: 'jarekkaczka',      id: '513676603696611330' },
-  { display: 'Bielluch', nick: 'bielluch',         id: '449211767890116629' },
-  { display: 'Marco',    nick: 'xmarco0',          id: '238942736043081729' },
+  { display: 'Ezvay',    nick: 'ezvay',           serverNick: 'ezvay',    id: '269140484721475606' },
+  { display: 'Prezes',   nick: 'prezesjaroslaw_',  serverNick: 'Judaszek', id: '743808864981352559' },
+  { display: 'Jarek',    nick: 'jarekkaczka',      serverNick: 'Yodasz',   id: '513676603696611330' },
+  { display: 'Bielluch', nick: 'bielluch',         serverNick: 'Bieluch', id: '449211767890116629' },
+  { display: 'Marco',    nick: 'xmarco0',          serverNick: 'Marco',    id: '238942736043081729' },
 ];
 
 async function loadTeam() {
@@ -192,7 +192,12 @@ async function loadTeam() {
 
   const withStatus = TEAM.map(m => ({
     ...m,
-    online: onlineNicks.some(n => n.includes(m.nick.toLowerCase()) || m.nick.toLowerCase().includes(n))
+   online: onlineNicks.some(n => 
+  n.includes(m.serverNick.toLowerCase()) || 
+  m.serverNick.toLowerCase().includes(n) ||
+  n.includes(m.nick.toLowerCase()) ||
+  m.nick.toLowerCase().includes(n)
+)
   })).sort((a,b) => b.online - a.online);
 
   document.getElementById('teamList').innerHTML = withStatus.map(m => `
