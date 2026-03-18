@@ -9,11 +9,6 @@
     .day-label{font-family:'Cinzel',serif;font-size:.8rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;padding:.5rem 0;border-bottom:2px solid var(--border);margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem;}
     .day-group{margin-bottom:2rem;}
     .savings-banner{background:linear-gradient(135deg,#003020,#004030);border:1px solid #006040;border-radius:var(--r);padding:.8rem 1.1rem;margin-bottom:1.5rem;font-size:.88rem;color:var(--green);}
-    .status-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-    .status-online{background:#40d090;box-shadow:0 0 6px #40d09088;}
-    .status-idle{background:#f0c040;box-shadow:0 0 6px #f0c04088;}
-    .status-dnd{background:#f04060;box-shadow:0 0 6px #f0406088;}
-    .status-offline{background:#555;} 
   </style>
 </head>
 <body>
@@ -99,25 +94,23 @@
     </div>
   </section>
 
-  <!-- TEAM / CONTACT -->
+  <!-- TEAM -->
   <section class="section">
     <div class="wrap">
       <h2 class="section-title">Nasza <span>Ekipa</span></h2>
       <p class="section-sub">Napisz do nas bezpośrednio na Discordzie</p>
-      <div class="grid-2" style="align-items:start;gap:1.5rem">
+      <div style="max-width:520px;margin:0 auto">
         <div class="card">
           <div style="font-family:'Cinzel',serif;font-size:.85rem;color:var(--text-b);margin-bottom:1rem">👥 Członkowie ekipy</div>
           <div id="teamList"><div class="spinner"></div></div>
-          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:.78rem;color:var(--text-m)">
-            Status odświeżany co 60 sekund
+          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+            <div style="font-size:.78rem;color:var(--text-m);margin-bottom:.6rem">💡 Jak napisać do nas na Discordzie?</div>
+            <div style="font-size:.82rem;color:var(--text-m);line-height:1.6">
+              1. Skopiuj nick wybranej osoby<br>
+              2. Otwórz Discord → kliknij lupkę 🔍 (wyszukiwarka)<br>
+              3. Wpisz skopiowany nick → kliknij na profil → wyślij wiadomość
+            </div>
           </div>
-        </div>
-        <div>
-          <iframe src="https://discord.com/widget?id=1336843340662050857&theme=dark"
-            width="100%" height="350" allowtransparency="true" frameborder="0"
-            sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
-            style="border-radius:var(--r);border:1px solid var(--border);display:block">
-          </iframe>
         </div>
       </div>
     </div>
@@ -182,36 +175,50 @@
 <script>
 let slots=[], filter='all', selectedSlotId=null, selectedPkg=null, selectedEq='none';
 
-const STATUS_INFO = {
-  online:  { label: 'Online',   cls: 'status-online' },
-  idle:    { label: 'Zaraz wracam', cls: 'status-idle' },
-  dnd:     { label: 'Nie przeszkadzać', cls: 'status-dnd' },
-  offline: { label: 'Offline',  cls: 'status-offline' },
-  unknown: { label: 'Offline',  cls: 'status-offline' }
-};
+const TEAM = [
+  { display: 'Ezvay',    nick: 'ezvay',           id: '269140484721475606' },
+  { display: 'Prezes',   nick: 'prezesjaroslaw_',  id: '743808864981352559' },
+  { display: 'Jarek',    nick: 'jarekkaczka',      id: '513676603696611330' },
+  { display: 'Bielluch', nick: 'bielluch',         id: '449211767890116629' },
+  { display: 'Marco',    nick: 'xmarco0',          id: '238942736043081729' },
+];
 
 async function loadTeam() {
+  let onlineNicks = [];
   try {
-    const team = await fetch('/api/team/status').then(r=>r.json());
-    document.getElementById('teamList').innerHTML = team.map(m => {
-      const s = STATUS_INFO[m.status] || STATUS_INFO.offline;
-      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem .7rem;background:#0a0e1a;border:1px solid var(--border);border-radius:var(--r);margin-bottom:.4rem">
-        <div style="display:flex;align-items:center;gap:.7rem">
-          <div style="position:relative">
-            <img src="${m.avatar}" style="width:36px;height:36px;border-radius:50%;border:1px solid var(--border)" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'">
-            <div class="status-dot ${s.cls}" style="position:absolute;bottom:0;right:0;border:2px solid #0a0e1a"></div>
-          </div>
-          <div>
-            <div style="font-family:'Cinzel',serif;font-size:.85rem;color:var(--text-b)">${m.display}</div>
-            <div style="font-size:.72rem;color:var(--text-m)">${s.label}</div>
-          </div>
+    const widget = await fetch('https://discord.com/api/guilds/1336843340662050857/widget.json').then(r=>r.json());
+    onlineNicks = (widget.members||[]).map(m=>(m.username||'').toLowerCase());
+  } catch(e) {}
+
+  const withStatus = TEAM.map(m => ({
+    ...m,
+    online: onlineNicks.some(n => n.includes(m.nick.toLowerCase()) || m.nick.toLowerCase().includes(n))
+  })).sort((a,b) => b.online - a.online);
+
+  document.getElementById('teamList').innerHTML = withStatus.map(m => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem .75rem;background:#060a14;border:1px solid ${m.online?'var(--gold-d)':'var(--border)'};border-radius:var(--r);margin-bottom:.4rem">
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <div style="position:relative;flex-shrink:0">
+          <img src="https://cdn.discordapp.com/avatars/${m.id}/${m.id}.png?size=64" style="width:38px;height:38px;border-radius:50%;border:1px solid var(--border)" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <div style="display:none;width:38px;height:38px;border-radius:50%;background:var(--gold-bg);border:1px solid var(--gold-d);align-items:center;justify-content:center;font-family:'Cinzel',serif;font-size:.9rem;color:var(--gold-l)">${m.display[0]}</div>
+          <div style="position:absolute;bottom:0;right:0;width:12px;height:12px;border-radius:50%;border:2px solid #060a14;background:${m.online?'#40d090':'#555'}"></div>
         </div>
-        <a href="https://discord.com/users/${m.id}" target="_blank" class="btn btn-outline btn-xs">Napisz</a>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    document.getElementById('teamList').innerHTML = '<p style="color:var(--text-m);font-size:.85rem">Nie można załadować statusów.</p>';
-  }
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:.88rem;color:var(--text-b)">${m.display}</div>
+          <div style="font-size:.72rem;color:${m.online?'#40d090':'var(--text-m)'}">${m.online?'🟢 Online':'⚫ Offline'}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:.4rem;align-items:center">
+        <div style="font-size:.75rem;color:var(--text-m);background:#0a0e1a;border:1px solid var(--border);border-radius:4px;padding:.2rem .5rem;font-family:monospace">${m.nick}</div>
+        <button class="btn btn-outline btn-xs" onclick="copyNick('${m.nick}',this)">📋</button>
+      </div>
+    </div>`).join('');
+}
+
+function copyNick(nick, btn) {
+  navigator.clipboard.writeText(nick);
+  btn.textContent = '✅';
+  setTimeout(() => btn.textContent = '📋', 2000);
 }
 
 loadTeam();
