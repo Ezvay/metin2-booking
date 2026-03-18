@@ -4,6 +4,12 @@
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Patologiczne Expowisko — Expienie Metin2 Chunjo</title>
   <link rel="stylesheet" href="/css/style.css">
+  <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+  <style>
+    .day-label{font-family:'Cinzel',serif;font-size:.8rem;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;padding:.5rem 0;border-bottom:2px solid var(--border);margin-bottom:.9rem;display:flex;align-items:center;gap:.5rem;}
+    .day-group{margin-bottom:2rem;}
+    .savings-banner{background:linear-gradient(135deg,#003020,#004030);border:1px solid #006040;border-radius:var(--r);padding:.8rem 1.1rem;margin-bottom:1.5rem;font-size:.88rem;color:var(--green);}
+  </style>
 </head>
 <body>
 <div class="chunjo-banner">
@@ -15,7 +21,6 @@
   <a class="nav-logo" href="/">⚔️ Patologiczne <span>Expowisko</span></a>
   <div class="nav-links">
     <a href="/" class="active">Strona główna</a>
-    <a href="/slots" class="btn btn-gold btn-sm">📅 Zarezerwuj termin</a>
     <a href="/admin/login" title="Panel ekipy" style="color:var(--text-m);font-size:1.1rem;opacity:.4;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.4">⚙️</a>
   </div>
 </nav>
@@ -27,10 +32,7 @@
       <svg width="18" height="13" viewBox="0 0 28 20" xmlns="http://www.w3.org/2000/svg" style="border:1px solid var(--cb);border-radius:2px"><rect width="28" height="20" fill="#1a1200"/><rect width="28" height="7" fill="#c8a000"/><rect y="13" width="28" height="7" fill="#8a6e00"/><circle cx="14" cy="10" r="4" fill="#f5c800"/><circle cx="14" cy="10" r="2" fill="#fff8cc"/></svg>
     </p>
     <h1 class="hero-title">Patologiczne<br><span>Expowisko</span></h1>
-    <p class="hero-sub">Profesjonalne expienie dla graczy Chunjo. Wybierz termin, zapisz się w 30 sekund — bez rejestracji.</p>
-    <div class="hero-cta">
-      <a href="/slots" class="btn btn-gold">📅 Zobacz dostępne terminy</a>
-    </div>
+    <p class="hero-sub">Profesjonalne expienie dla graczy Chunjo. Zapisz się w 30 sekund — bez rejestracji.</p>
     <div class="stats-bar">
       <div class="stat"><div class="stat-v" id="statSlots">—</div><div class="stat-l">Wolnych terminów</div></div>
       <div class="stat"><div class="stat-v">45–75</div><div class="stat-l">Poziomy</div></div>
@@ -39,6 +41,30 @@
     </div>
   </section>
 
+  <!-- SLOTS DIRECTLY ON HOMEPAGE -->
+  <section class="section">
+    <div class="wrap">
+      <h2 class="section-title">Dostępne <span>Terminy</span></h2>
+      <p class="section-sub">Wybierz termin i zarezerwuj miejsce w 30 sekund</p>
+
+      <div class="savings-banner">
+        💰 <strong>Zaoszczędź na Duo/Trio!</strong> Solo kosztuje 5000 SM/h · Duo tylko 2000 SM/h · Trio zaledwie 1500 SM/h od osoby!
+      </div>
+
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="setFilter('all',this)">Wszystkie</button>
+        <button class="filter-btn" onclick="setFilter('open',this)">🟢 Wolne miejsca</button>
+        <button class="filter-btn" onclick="setFilter('party',this)">🔮 Szuka party</button>
+        <button class="filter-btn" onclick="setFilter('solo',this)">🗡️ Solo</button>
+        <button class="filter-btn" onclick="setFilter('duo',this)">⚔️ Duo</button>
+        <button class="filter-btn" onclick="setFilter('trio',this)">🔱 Trio</button>
+      </div>
+
+      <div id="slotsContent"><div class="spinner"></div></div>
+    </div>
+  </section>
+
+  <!-- EQP RENTAL -->
   <section class="section" style="background:linear-gradient(180deg,transparent,#0d1220 30%,#0d1220 70%,transparent)">
     <div class="wrap">
       <h2 class="section-title">Wynajem <span>Ekwipunku</span></h2>
@@ -53,11 +79,7 @@
           <div style="color:var(--gold-l);font-size:1.1rem;font-family:'Cinzel',serif;margin-bottom:.3rem">60% szansy na Bonus DOŚ</div>
           <div style="color:var(--text-m);font-size:.85rem;margin-bottom:1rem">Średnio co 1.7 potwora dostajesz +30% exp</div>
           <div style="border-top:1px solid var(--border);padding-top:.8rem;display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-family:'Cinzel',serif;color:var(--gold-l)">500 SM/h</div>
-              <div style="font-size:.78rem;color:var(--text-m)">Zastaw: 30 000 SM (zwrotny)</div>
-            </div>
-            <a href="/slots" class="btn btn-outline btn-sm">Zarezerwuj</a>
+            <div><div style="font-family:'Cinzel',serif;color:var(--gold-l)">500 SM/h</div><div style="font-size:.78rem;color:var(--text-m)">Zastaw: 30 000 SM (zwrotny)</div></div>
           </div>
         </div>
         <div class="card">
@@ -66,50 +88,14 @@
           <div style="color:var(--gold-l);font-size:1.1rem;font-family:'Cinzel',serif;margin-bottom:.3rem">40% szansy na Bonus DOŚ</div>
           <div style="color:var(--text-m);font-size:.85rem;margin-bottom:1rem">Średnio co 2.5 potwora dostajesz +30% exp</div>
           <div style="border-top:1px solid var(--border);padding-top:.8rem;display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-family:'Cinzel',serif;color:var(--gold-l)">300 SM/h</div>
-              <div style="font-size:.78rem;color:var(--text-m)">Zastaw: 10 000 SM (zwrotny)</div>
-            </div>
-            <a href="/slots" class="btn btn-outline btn-sm">Zarezerwuj</a>
+            <div><div style="font-family:'Cinzel',serif;color:var(--gold-l)">300 SM/h</div><div style="font-size:.78rem;color:var(--text-m)">Zastaw: 10 000 SM (zwrotny)</div></div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="section">
-    <div class="wrap">
-      <h2 class="section-title">Jak to <span>Działa?</span></h2>
-      <p class="section-sub">Rezerwacja w 30 sekund — bez rejestracji konta</p>
-      <div class="grid-2">
-        <div class="card fade-up" style="animation-delay:.05s">
-          <div style="display:flex;gap:1rem;align-items:flex-start">
-            <div style="font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:var(--gold-d);line-height:1">01</div>
-            <div><div style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--text-b);margin-bottom:.25rem">Wybierz wolny termin</div><div style="color:var(--text-m);font-size:.88rem">Przeglądaj dostępne sloty dodane przez ekipę.</div></div>
-          </div>
-        </div>
-        <div class="card fade-up" style="animation-delay:.1s">
-          <div style="display:flex;gap:1rem;align-items:flex-start">
-            <div style="font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:var(--gold-d);line-height:1">02</div>
-            <div><div style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--text-b);margin-bottom:.25rem">Wybierz pakiet</div><div style="color:var(--text-m);font-size:.88rem">Solo, Duo lub Trio — pierwszy gracz ustawia typ.</div></div>
-          </div>
-        </div>
-        <div class="card fade-up" style="animation-delay:.15s">
-          <div style="display:flex;gap:1rem;align-items:flex-start">
-            <div style="font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:var(--gold-d);line-height:1">03</div>
-            <div><div style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--text-b);margin-bottom:.25rem">Wpisz 3 rzeczy</div><div style="color:var(--text-m);font-size:.88rem">Nazwa postaci, poziom i nick Discord. Gotowe.</div></div>
-          </div>
-        </div>
-        <div class="card fade-up" style="animation-delay:.2s">
-          <div style="display:flex;gap:1rem;align-items:flex-start">
-            <div style="font-family:'Cinzel',serif;font-size:1.8rem;font-weight:900;color:var(--gold-d);line-height:1">04</div>
-            <div><div style="font-family:'Cinzel',serif;font-size:.95rem;color:var(--text-b);margin-bottom:.25rem">Ekipa potwierdza</div><div style="color:var(--text-m);font-size:.88rem">Dostajesz link do śledzenia statusu. Godzina jest orientacyjna ±15 min.</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
+  <!-- REVIEWS -->
   <section class="section">
     <div class="wrap">
       <h2 class="section-title">Opinie <span>Graczy</span></h2>
@@ -118,33 +104,260 @@
     </div>
   </section>
 </main>
+
+<!-- BOOK MODAL -->
+<div class="overlay" id="bookOverlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">⚔️ Rezerwacja terminu</div>
+    <div id="slotInfo" style="background:#0a0e1a;border-radius:4px;padding:.75rem;margin-bottom:1.1rem;font-size:.88rem;color:var(--text-m)"></div>
+    <div id="bookAlert"></div>
+    <div id="pkgSection"></div>
+    <div class="form-group">
+      <label class="form-label">Nazwa postaci *</label>
+      <input type="text" id="bName" class="form-control" placeholder="NazwaPostaci">
+    </div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Klasa *</label>
+        <select id="bClass" class="form-control">
+          <option value="">— wybierz —</option>
+          <option>Wojownik</option><option>Ninja</option><option>Szaman</option><option>Sura</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Aktualny poziom *</label>
+        <input type="number" id="bLevel" class="form-control" min="1" max="120" placeholder="np. 55">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Nick Discord *</label>
+      <input type="text" id="bDiscord" class="form-control" placeholder="TwójNick">
+    </div>
+    <div style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-m);margin-bottom:.6rem">Wynajem eqp (opcjonalne)</div>
+    <div style="display:grid;grid-template-columns:1fr;gap:.5rem;margin-bottom:1rem" id="eqGrid"></div>
+    <div id="lfpSection" style="display:none;margin-bottom:1rem">
+      <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;color:var(--text-m);font-size:.9rem">
+        <input type="checkbox" id="bLFP" style="width:16px;height:16px;accent-color:var(--gold)">
+        <span>🔮 Szukam graczy do party — pokaż mój slot jako otwarty</span>
+      </label>
+    </div>
+    <div style="margin-bottom:1rem">
+      <div class="h-captcha" data-sitekey="638a1d80-4b9c-44d2-9f2e-e78c063a2580"></div>
+    </div>
+    <button class="btn btn-gold" style="width:100%" id="bookBtn" onclick="submitBooking()">⚔️ Zarezerwuj miejsce</button>
+  </div>
+</div>
+
 <footer><p>⚔️ <strong style="color:var(--gold-l)">Patologiczne Expowisko</strong> — Metin2 Leveling dla Chunjo · Nie jesteśmy oficjalną stroną serwera Projekt Hard.</p></footer>
 <script src="/js/app.js"></script>
 <script>
-  fetch('/api/slots').then(r=>r.json()).then(slots=>{
-    const free=slots.filter(s=>!s.package_type||(s.spots_left&&s.spots_left>0)).length;
-    document.getElementById('statSlots').textContent=free||'—';
+let slots=[], filter='all', selectedSlotId=null, selectedPkg=null, selectedEq='none';
+
+async function load(){
+  slots=await fetch('/api/slots').then(r=>r.json());
+  const free=slots.filter(s=>!s.package_type||(s.spots_left&&s.spots_left>0)).length;
+  document.getElementById('statSlots').textContent=free||'—';
+  render();
+}
+
+function setFilter(f,btn){
+  filter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function render(){
+  const el=document.getElementById('slotsContent');
+  let list=slots;
+  if(filter==='open') list=slots.filter(s=>!s.package_type||(s.spots_left>0));
+  else if(filter==='party') list=slots.filter(s=>s.is_open_party);
+  else if(filter==='solo') list=slots.filter(s=>s.package_type==='solo'||!s.package_type);
+  else if(filter==='duo') list=slots.filter(s=>s.package_type==='duo');
+  else if(filter==='trio') list=slots.filter(s=>s.package_type==='trio');
+
+  list=list.sort((a,b)=>{
+    if(a.is_open_party&&!b.is_open_party) return -1;
+    if(!a.is_open_party&&b.is_open_party) return 1;
+    if(a.date!==b.date) return a.date>b.date?1:-1;
+    return a.time>b.time?1:-1;
   });
 
-  fetch('/api/reviews').then(r=>r.json()).then(reviews=>{
-    const el=document.getElementById('reviewsList');
-    if(!reviews.length){el.innerHTML='<p style="text-align:center;color:var(--text-m);font-style:italic">Brak opinii. Bądź pierwszy!</p>';return;}
-    const avg=reviews.reduce((a,r)=>a+r.rating,0)/reviews.length;
-    document.getElementById('statRating').textContent=avg.toFixed(1)+' ⭐';
-    el.innerHTML=`<div class="grid-2">${reviews.slice(0,4).map(r=>`
-      <div class="review-card">
-        <div style="color:var(--gold-l);margin-bottom:.3rem">${'⭐'.repeat(r.rating)}</div>
-        <div style="color:var(--text);margin-bottom:.3rem">"${r.comment||'Brak komentarza'}"</div>
-        <div style="color:var(--text-m);font-size:.78rem">— ${r.reviewer_name} · ${PKG[r.package_type]?.name||''}</div>
-      </div>`).join('')}</div>`;
-  });
+  if(!list.length){
+    el.innerHTML=`<div style="text-align:center;padding:3rem;color:var(--text-m)">
+      <p style="font-size:2.5rem;margin-bottom:1rem">📭</p>
+      <p>Brak dostępnych terminów w tej chwili.</p>
+      <p style="margin-top:.5rem;font-size:.88rem">Sprawdź później lub obserwuj Discord.</p>
+    </div>`;return;
+  }
+
+  const byDate={};
+  list.forEach(s=>{(byDate[s.date]=byDate[s.date]||[]).push(s);});
+
+  el.innerHTML=Object.entries(byDate).map(([date,daySlots])=>{
+    const isToday=date===new Date().toISOString().split('T')[0];
+    return `<div class="day-group">
+      <div class="day-label">📅 ${formatDate(date)}${isToday?' <span style="background:var(--gold);color:#1a1000;padding:.1rem .4rem;border-radius:3px;font-size:.62rem;font-family:Cinzel,serif">DZIŚ</span>':''}</div>
+      <div class="grid-3">${daySlots.map(renderSlot).join('')}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderSlot(s){
+  const isFull=s.package_type&&s.spots_left<=0;
+  const maxDots=s.max_players||(s.package_type?PKG[s.package_type].max:3);
+  const taken=s.bookings||[];
+  let dots='';
+  for(let i=0;i<maxDots;i++){
+    const b=taken[i];
+    if(b) dots+=`<div class="pdot taken" title="${b.char_name} (${b.char_class} poz.${b.char_level})">⚔️</div>`;
+    else dots+=`<div class="pdot empty">?</div>`;
+  }
+  let priceHint='';
+  if(s.package_type){
+    priceHint=`<div style="font-size:.75rem;color:var(--gold-l);">${PKG[s.package_type].icon} ${PKG[s.package_type].name} · ${PKG[s.package_type].price.toLocaleString()} SM/h</div>`;
+    if(s.package_type!=='solo'&&s.spots_left>0){
+      const saved=PKG.solo.price-PKG[s.package_type].price;
+      priceHint+=`<div class="slot-saving">💰 Zaoszczędź ${saved.toLocaleString()} SM/h dołączając!</div>`;
+    }
+  } else {
+    priceHint=`<div style="font-size:.75rem;color:var(--text-m)">Typ ustali pierwszy gracz</div>`;
+  }
+  const partyOpen=s.is_open_party;
+  return `<div class="slot-card ${isFull?'full':''} ${partyOpen?'party-open':''}">
+    ${partyOpen?'<div class="party-badge" style="margin-bottom:.6rem">🔮 Szuka graczy do party!</div>':''}
+    <div class="slot-time">${s.time}</div>
+    <div class="slot-approx">orientacyjnie, ±15 min</div>
+    <div class="slot-by" style="margin-top:.3rem;font-size:.72rem;color:var(--text-m)">Ekipa: ${s.admin_name}</div>
+    <div class="slot-players" style="margin:.8rem 0 .6rem">${s.package_type?dots:'<div style="font-size:.8rem;color:var(--text-m);font-style:italic">Brak rezerwacji — zarezerwuj jako pierwszy!</div>'}</div>
+    ${priceHint}
+    ${s.note?`<div style="font-size:.75rem;color:var(--text-m);font-style:italic;margin-top:.4rem">📝 ${s.note}</div>`:''}
+    <div class="slot-footer" style="margin-top:.8rem">
+      <span class="badge ${isFull?'b-full':partyOpen?'b-party':'b-open'}">${isFull?'Pełny':partyOpen?'Szuka party':s.package_type?s.spots_left+' wolne':'Wolny'}</span>
+      ${isFull
+        ?'<span style="color:var(--text-m);font-size:.8rem">Zajęty</span>'
+        :`<button class="btn btn-gold btn-sm" onclick="openBook(${s.id},'${s.date}','${s.time}','${s.package_type||''}',${s.spots_left||3})">Zarezerwuj</button>`
+      }
+    </div>
+  </div>`;
+}
+
+function openBook(id,date,time,pkg,spotsLeft){
+  selectedSlotId=id;selectedPkg=pkg||null;selectedEq='none';
+  document.getElementById('slotInfo').innerHTML=`📅 <strong style="color:var(--text-b)">${date} o ${time}</strong> &nbsp;·&nbsp; ±15 min${spotsLeft?' &nbsp;·&nbsp; 🟢 '+spotsLeft+' wolne':''}`;
+  document.getElementById('bookAlert').innerHTML='';
+  document.getElementById('bName').value='';
+  document.getElementById('bClass').value='';
+  document.getElementById('bLevel').value='';
+  document.getElementById('bDiscord').value='';
+  document.getElementById('bLFP').checked=false;
+  if(typeof hcaptcha!=='undefined') hcaptcha.reset();
+
+  const pkgSection=document.getElementById('pkgSection');
+  const lfpSection=document.getElementById('lfpSection');
+  if(pkg){
+    pkgSection.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-m);margin-bottom:.5rem">Pakiet</div>
+      <div style="display:flex;align-items:center;gap:.6rem;background:#0a0e1a;border:1px solid var(--gold-d);border-radius:var(--r);padding:.7rem 1rem;margin-bottom:1rem">
+        <span style="font-size:1.2rem">${PKG[pkg].icon}</span>
+        <div><div style="font-family:'Cinzel',serif;color:var(--text-b)">${PKG[pkg].name}</div>
+        <div style="font-size:.78rem;color:var(--gold-l)">${PKG[pkg].price.toLocaleString()} SM/h od osoby</div></div>
+      </div>`;
+    lfpSection.style.display=pkg!=='solo'?'':'none';
+  } else {
+    pkgSection.innerHTML=`<div style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-m);margin-bottom:.6rem">Wybierz pakiet *</div>
+      <div class="pkg-grid">
+        ${Object.entries(PKG).map(([k,p])=>`
+          <div class="pkg-opt" onclick="selectPkg('${k}')" id="pkg_${k}">
+            <div class="pkg-icon">${p.icon}</div>
+            <div class="pkg-name">${p.name}</div>
+            <div class="pkg-price">${p.price.toLocaleString()} SM/h</div>
+            ${k!=='solo'?`<div class="pkg-save">Taniej o ${(PKG.solo.price-p.price).toLocaleString()} SM/h!</div>`:''}
+          </div>`).join('')}
+      </div>`;
+    lfpSection.style.display='none';
+  }
+
+  document.getElementById('eqGrid').innerHTML=Object.entries(EQ).map(([k,e])=>`
+    <div class="eq-card ${k==='none'?'selected':''}" onclick="selectEq('${k}')" id="eq_${k}">
+      <div class="eq-title">${k==='none'?'❌ Bez wypożyczenia':k==='full'?'👑 Pełny Set':'⚡ Naszyjnik + Buty'}</div>
+      ${e.bonus?`<div class="eq-bonus">${e.bonus}% szansy na Bonus DOŚ</div>
+      <div class="eq-desc">${e.items}</div>
+      <div class="eq-price">${e.price} SM/h <span class="eq-deposit">· zastaw ${e.deposit.toLocaleString()} SM (zwrotny)</span></div>`
+      :`<div class="eq-desc" style="color:var(--text-m)">Expienie bez bonusu DOŚ z eqp</div>`}
+    </div>`).join('');
+
+  document.getElementById('bookOverlay').classList.add('open');
+}
+
+function selectPkg(k){
+  selectedPkg=k;
+  document.querySelectorAll('.pkg-opt').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('pkg_'+k)?.classList.add('selected');
+  document.getElementById('lfpSection').style.display=k!=='solo'?'':'none';
+}
+
+function selectEq(k){
+  selectedEq=k;
+  document.querySelectorAll('.eq-card').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('eq_'+k)?.classList.add('selected');
+}
+
+function closeModal(){document.getElementById('bookOverlay').classList.remove('open');}
+document.getElementById('bookOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('bookOverlay'))closeModal();});
+
+async function submitBooking(){
+  const alertEl=document.getElementById('bookAlert');
+  const btn=document.getElementById('bookBtn');
+  const name=document.getElementById('bName').value.trim();
+  const cls=document.getElementById('bClass').value;
+  const lvl=document.getElementById('bLevel').value;
+  const discord=document.getElementById('bDiscord').value.trim();
+  const lfp=document.getElementById('bLFP').checked;
+  if(!selectedPkg){alertEl.innerHTML='<div class="alert alert-error">Wybierz pakiet.</div>';return;}
+  if(!name||!cls||!lvl||!discord){alertEl.innerHTML='<div class="alert alert-error">Wypełnij wszystkie wymagane pola.</div>';return;}
+  const captchaResp=typeof hcaptcha!=='undefined'?hcaptcha.getResponse():'';
+  if(!captchaResp){alertEl.innerHTML='<div class="alert alert-error">Potwierdź że nie jesteś robotem.</div>';return;}
+  btn.disabled=true;btn.textContent='Rezerwowanie...';
+  const res=await fetch(`/api/slots/${selectedSlotId}/book`,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({char_name:name,char_class:cls,char_level:lvl,contact_discord:discord,
+      package_type:selectedPkg,equipment_rental:selectedEq,looking_for_party:lfp,hcaptcha_token:captchaResp})
+  }).then(r=>r.json());
+  if(res.success){
+    const statusUrl=location.origin+'/status?token='+res.statusToken;
+    document.querySelector('.modal').innerHTML=`
+      <div style="text-align:center;padding:1rem">
+        <div style="font-size:3.5rem;margin-bottom:.8rem">🎉</div>
+        <div class="modal-title" style="text-align:center">Rezerwacja złożona!</div>
+        <p style="color:var(--text-m);margin-bottom:1.3rem;font-size:.9rem">Ekipa potwierdzi przez Discord. Zapisz link do śledzenia statusu.</p>
+        <div style="background:#0a0e1a;border:1px solid var(--border);border-radius:var(--r);padding:.9rem;margin-bottom:1.2rem">
+          <div style="font-family:'Cinzel',serif;font-size:.65rem;color:var(--text-m);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem">🔗 Link do statusu</div>
+          <div style="color:var(--gold-l);font-size:.82rem;word-break:break-all">${statusUrl}</div>
+          <button class="btn btn-outline btn-sm" style="margin-top:.7rem" onclick="navigator.clipboard.writeText('${statusUrl}');this.textContent='✅ Skopiowano!'">📋 Kopiuj link</button>
+        </div>
+        <button class="btn btn-outline" style="width:100%" onclick="closeModal();load()">Zamknij</button>
+      </div>`;
+  } else {
+    alertEl.innerHTML=`<div class="alert alert-error">${res.error}</div>`;
+    btn.disabled=false;btn.textContent='⚔️ Zarezerwuj miejsce';
+    if(typeof hcaptcha!=='undefined') hcaptcha.reset();
+  }
+}
+
+fetch('/api/reviews').then(r=>r.json()).then(reviews=>{
+  const el=document.getElementById('reviewsList');
+  if(!reviews.length){el.innerHTML='<p style="text-align:center;color:var(--text-m);font-style:italic">Brak opinii. Bądź pierwszy!</p>';return;}
+  const avg=reviews.reduce((a,r)=>a+r.rating,0)/reviews.length;
+  document.getElementById('statRating').textContent=avg.toFixed(1)+' ⭐';
+  el.innerHTML=`<div class="grid-2">${reviews.slice(0,4).map(r=>`
+    <div class="review-card">
+      <div style="color:var(--gold-l);margin-bottom:.3rem">${'⭐'.repeat(r.rating)}</div>
+      <div style="color:var(--text);margin-bottom:.3rem">"${r.comment||'Brak komentarza'}"</div>
+      <div style="color:var(--text-m);font-size:.78rem">— ${r.reviewer_name} · ${PKG[r.package_type]?.name||''}</div>
+    </div>`).join('')}</div>`;
+});
+
+load();
 </script>
 </body>
 </html>
-```
-
----
-
-⚠️ **Pamiętaj** — zmiana hasła w `db/database.js` zadziała tylko dla nowej bazy. Żeby zmienić hasło na już działającej stronie wejdź na **Render → Shell** i wklej tę komendę:
-```
-node -e "const db=require('./db/database');const b=require('bcryptjs');setTimeout(async()=>{const h=await b.hash('platforma',10);await db.run2('UPDATE admins SET password=? WHERE username=?',[h,'admin']);console.log('Haslo zmienione!');},2000)"
