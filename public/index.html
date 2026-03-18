@@ -16,6 +16,7 @@
   <div class="nav-links">
     <a href="/" class="active">Strona główna</a>
     <a href="/slots" class="btn btn-gold btn-sm">📅 Zarezerwuj termin</a>
+    <a href="/admin/login" title="Panel ekipy" style="color:var(--text-m);font-size:1.1rem;opacity:.4;transition:opacity .2s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.4">⚙️</a>
   </div>
 </nav>
 <main>
@@ -38,16 +39,13 @@
     </div>
   </section>
 
-  <!-- EQP RENTAL SECTION -->
   <section class="section" style="background:linear-gradient(180deg,transparent,#0d1220 30%,#0d1220 70%,transparent)">
     <div class="wrap">
       <h2 class="section-title">Wynajem <span>Ekwipunku</span></h2>
       <p class="section-sub">Zwiększ szansę na Bonus DOŚ — wypożycz eqp z bonusem na doświadczenie</p>
-
       <div style="background:#0a0e1a;border:1px solid var(--border);border-radius:var(--r);padding:1rem 1.2rem;margin-bottom:1.5rem;font-size:.88rem;color:var(--text-m);line-height:1.7">
         💡 <strong style="color:var(--text-b)">Czym jest Bonus DOŚ?</strong> To bonus który daje <strong style="color:var(--gold-l)">+30% doświadczenia</strong> za zabicie potwora (stała wartość). Procent oznacza <em>szansę</em> na otrzymanie tego bonusu — nie mnożnik. Przykład: mając <strong style="color:var(--gold-l)">60% szansy</strong>, średnio za każde 1.7 potwora dostaniesz +30% exp.
       </div>
-
       <div class="grid-2">
         <div class="card" style="border-color:var(--gold-d)">
           <div style="font-family:'Cinzel',serif;font-size:1rem;color:var(--gold-l);margin-bottom:.8rem">👑 Pełny Set</div>
@@ -79,7 +77,6 @@
     </div>
   </section>
 
-  <!-- HOW IT WORKS -->
   <section class="section">
     <div class="wrap">
       <h2 class="section-title">Jak to <span>Działa?</span></h2>
@@ -113,7 +110,6 @@
     </div>
   </section>
 
-  <!-- REVIEWS -->
   <section class="section">
     <div class="wrap">
       <h2 class="section-title">Opinie <span>Graczy</span></h2>
@@ -126,16 +122,16 @@
 <script src="/js/app.js"></script>
 <script>
   fetch('/api/slots').then(r=>r.json()).then(slots=>{
-    const free = slots.filter(s=>!s.package_type||(s.spots_left&&s.spots_left>0)).length;
-    document.getElementById('statSlots').textContent = free || '—';
+    const free=slots.filter(s=>!s.package_type||(s.spots_left&&s.spots_left>0)).length;
+    document.getElementById('statSlots').textContent=free||'—';
   });
 
   fetch('/api/reviews').then(r=>r.json()).then(reviews=>{
-    const el = document.getElementById('reviewsList');
-    if(!reviews.length){ el.innerHTML='<p style="text-align:center;color:var(--text-m);font-style:italic">Brak opinii. Bądź pierwszy!</p>'; return; }
-    const avg = reviews.reduce((a,r)=>a+r.rating,0)/reviews.length;
-    document.getElementById('statRating').textContent = avg.toFixed(1)+' ⭐';
-    el.innerHTML = `<div class="grid-2">${reviews.slice(0,4).map(r=>`
+    const el=document.getElementById('reviewsList');
+    if(!reviews.length){el.innerHTML='<p style="text-align:center;color:var(--text-m);font-style:italic">Brak opinii. Bądź pierwszy!</p>';return;}
+    const avg=reviews.reduce((a,r)=>a+r.rating,0)/reviews.length;
+    document.getElementById('statRating').textContent=avg.toFixed(1)+' ⭐';
+    el.innerHTML=`<div class="grid-2">${reviews.slice(0,4).map(r=>`
       <div class="review-card">
         <div style="color:var(--gold-l);margin-bottom:.3rem">${'⭐'.repeat(r.rating)}</div>
         <div style="color:var(--text);margin-bottom:.3rem">"${r.comment||'Brak komentarza'}"</div>
@@ -145,3 +141,10 @@
 </script>
 </body>
 </html>
+```
+
+---
+
+⚠️ **Pamiętaj** — zmiana hasła w `db/database.js` zadziała tylko dla nowej bazy. Żeby zmienić hasło na już działającej stronie wejdź na **Render → Shell** i wklej tę komendę:
+```
+node -e "const db=require('./db/database');const b=require('bcryptjs');setTimeout(async()=>{const h=await b.hash('platforma',10);await db.run2('UPDATE admins SET password=? WHERE username=?',[h,'admin']);console.log('Haslo zmienione!');},2000)"
