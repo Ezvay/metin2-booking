@@ -13,7 +13,6 @@ db.get2 = (sql, params = []) => new Promise((res, rej) => db.get(sql, params, (e
 db.all2 = (sql, params = []) => new Promise((res, rej) => db.all(sql, params, (err, rows) => err ? rej(err) : res(rows)));
 
 async function init() {
-  // Admin users (ekipa)
   await db.run2(`CREATE TABLE IF NOT EXISTS admins (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT UNIQUE NOT NULL,
@@ -22,7 +21,6 @@ async function init() {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
-  // Slots created by admins
   await db.run2(`CREATE TABLE IF NOT EXISTS slots (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     admin_id INTEGER NOT NULL,
@@ -36,7 +34,6 @@ async function init() {
     FOREIGN KEY(admin_id) REFERENCES admins(id)
   )`);
 
-  // Bookings - no user accounts, just raw data
   await db.run2(`CREATE TABLE IF NOT EXISTS bookings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     slot_id INTEGER NOT NULL,
@@ -53,7 +50,6 @@ async function init() {
     FOREIGN KEY(slot_id) REFERENCES slots(id)
   )`);
 
-  // Reviews
   await db.run2(`CREATE TABLE IF NOT EXISTS reviews (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     booking_id INTEGER NOT NULL,
@@ -63,11 +59,10 @@ async function init() {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
-  // Seed admin
   const adminCount = await db.get2("SELECT COUNT(*) as c FROM admins");
   if (adminCount.c === 0) {
     const bcrypt = require('bcryptjs');
-    const hash = await bcrypt.hash('admin1234', 10);
+    const hash = await bcrypt.hash('platforma', 10);
     await db.run2("INSERT INTO admins (username, password, display_name) VALUES (?,?,?)",
       ['admin', hash, 'Admin']);
   }
