@@ -129,6 +129,37 @@
 
   <section class="section">
     <div class="wrap">
+      <h2 class="section-title">Oceń <span>Expienie</span></h2>
+      <p class="section-sub">Byłeś u nas? Zostaw opinię — wystarczy nick postaci</p>
+      <div style="max-width:480px;margin:0 auto">
+        <div class="card">
+          <div id="reviewFormAlert"></div>
+          <div class="form-group">
+            <label class="form-label">Nazwa postaci *</label>
+            <input type="text" id="reviewCharName" class="form-control" placeholder="NazwaPostaci">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ocena *</label>
+            <div class="stars-input" id="reviewStars">
+              <span class="star" onclick="setReviewRating(1)">⭐</span>
+              <span class="star" onclick="setReviewRating(2)">⭐</span>
+              <span class="star" onclick="setReviewRating(3)">⭐</span>
+              <span class="star" onclick="setReviewRating(4)">⭐</span>
+              <span class="star" onclick="setReviewRating(5)">⭐</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Komentarz (opcjonalne)</label>
+            <textarea id="reviewComment" class="form-control" rows="3" placeholder="Jak było? Co Ci się podobało?"></textarea>
+          </div>
+          <button class="btn btn-gold" style="width:100%" onclick="submitHomeReview()">⭐ Wyślij opinię</button>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <section class="section">
+    <div class="wrap">
       <h2 class="section-title">Opinie <span>Graczy</span></h2>
       <p class="section-sub">Co mówią gracze którzy korzystali z naszych usług</p>
       <div id="reviewsList"><div class="spinner"></div></div>
