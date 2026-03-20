@@ -20,6 +20,9 @@
     .future-day-header.open .future-day-arrow{transform:rotate(180deg);}
     .future-day-body{display:none;padding:1rem;background:#0a0c16;border:1px solid var(--gold-d);border-top:none;border-bottom-left-radius:var(--r);border-bottom-right-radius:var(--r);}
     .future-day-body.open{display:block;}
+    .hours-slider{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:var(--border);outline:none;}
+    .hours-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--gold);cursor:pointer;}
+    .hours-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--gold);cursor:pointer;border:none;}
   </style>
 </head>
 <body>
@@ -162,6 +165,15 @@
       <label class="form-label">Nick Discord *</label>
       <input type="text" id="bDiscord" class="form-control" placeholder="TwójNick">
     </div>
+    <div class="form-group">
+      <label class="form-label">Ile godzin chcesz expić? *</label>
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.4rem">
+        <input type="range" id="bHours" class="hours-slider" min="1" max="8" value="1"
+          oninput="updateHoursLabel(this.value)">
+        <div id="hoursLabel" style="font-family:'Cinzel',serif;font-size:1.3rem;color:var(--gold-l);min-width:48px;text-align:right;font-weight:900">1h</div>
+      </div>
+      <div id="hoursInfo" style="font-size:.78rem;color:var(--text-m)">Zostanie zarezerwowany 1 slot.</div>
+    </div>
     <div style="font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-m);margin-bottom:.6rem">Wynajem eqp (opcjonalne)</div>
     <div style="display:grid;grid-template-columns:1fr;gap:.5rem;margin-bottom:1rem" id="eqGrid"></div>
     <div id="lfpSection" style="display:none;margin-bottom:1rem">
@@ -185,7 +197,7 @@
     <p style="color:var(--text-m);font-size:.9rem;margin-bottom:1.2rem">Napisz do dostępnego członka ekipy — pomoże znaleźć kogoś do party lub dołączy sam z gry!</p>
     <div id="partyContactList"></div>
     <div style="margin-top:1rem;padding:.8rem;background:#0a0e1a;border:1px solid var(--border);border-radius:var(--r);font-size:.8rem;color:var(--text-m)">
-      💡 Skopiuj nick i napisz na Discordzie: <em>"Hej, szukam kogoś do Duo/Trio na [godzina]"</em>
+      💡 Skopiuj nick i napisz: <em>"Hej, szukam kogoś do Duo/Trio na [godzina]"</em>
     </div>
   </div>
 </div>
@@ -275,6 +287,15 @@ document.getElementById('partyOverlay').addEventListener('click', e => {
 loadTeam();
 setInterval(loadTeam, 60000);
 
+function updateHoursLabel(val) {
+  document.getElementById('hoursLabel').textContent = val + 'h';
+  const price = selectedPkg ? PKG[selectedPkg].price * parseInt(val) : 0;
+  const info = parseInt(val) === 1
+    ? 'Zostanie zarezerwowany 1 slot.'
+    : `System zarezerwuje do ${val} kolejnych wolnych slotów.${price ? ' Szacowany koszt: ' + price.toLocaleString() + ' SM.' : ''}`;
+  document.getElementById('hoursInfo').textContent = info;
+}
+
 async function load() {
   slots = await fetch('/api/slots').then(r=>r.json());
   const free = slots.filter(s=>!s.package_type||(s.spots_left&&s.spots_left>0)).length;
@@ -299,54 +320,39 @@ function toggleDay(id) {
 function render(){
   const el=document.getElementById('slotsContent');
   const today=new Date().toISOString().split('T')[0];
-
   let list=slots;
   if(filter==='open') list=slots.filter(s=>!s.package_type||(s.spots_left>0));
   else if(filter==='party') list=slots.filter(s=>s.is_open_party);
   else if(filter==='solo') list=slots.filter(s=>s.package_type==='solo'||!s.package_type);
   else if(filter==='duo') list=slots.filter(s=>s.package_type==='duo');
   else if(filter==='trio') list=slots.filter(s=>s.package_type==='trio');
-
   list=list.sort((a,b)=>{
     if(a.is_open_party&&!b.is_open_party) return -1;
     if(!a.is_open_party&&b.is_open_party) return 1;
     if(a.date!==b.date) return a.date>b.date?1:-1;
     return a.time>b.time?1:-1;
   });
-
   if(!list.length){
     el.innerHTML=`<div style="text-align:center;padding:3rem;color:var(--text-m)"><p style="font-size:2.5rem;margin-bottom:1rem">📭</p><p>Brak dostępnych terminów.</p></div>`;
     return;
   }
-
   const byDate={};
   list.forEach(s=>{(byDate[s.date]=byDate[s.date]||[]).push(s);});
-
-  let html = '';
-
-  Object.entries(byDate).forEach(([date, daySlots]) => {
-    const isToday = date === today;
-    const freeCount = daySlots.filter(s => !s.package_type || s.spots_left > 0).length;
-    const partyCount = daySlots.filter(s => s.is_open_party).length;
-    const dateId = date.replace(/-/g,'');
-
-    if (isToday) {
-      // Today — show normally
-      html += `<div class="day-group">
-        <div class="day-label">
-          📅 Dziś
-          <span style="background:var(--gold);color:#1a1000;padding:.1rem .4rem;border-radius:3px;font-size:.62rem;font-family:Cinzel,serif">DZIŚ</span>
-        </div>
+  let html='';
+  Object.entries(byDate).forEach(([date,daySlots])=>{
+    const isToday=date===today;
+    const freeCount=daySlots.filter(s=>!s.package_type||s.spots_left>0).length;
+    const partyCount=daySlots.filter(s=>s.is_open_party).length;
+    const dateId=date.replace(/-/g,'');
+    if(isToday){
+      html+=`<div class="day-group">
+        <div class="day-label">📅 Dziś <span style="background:var(--gold);color:#1a1000;padding:.1rem .4rem;border-radius:3px;font-size:.62rem;font-family:Cinzel,serif">DZIŚ</span></div>
         <div class="grid-3">${daySlots.map(renderSlot).join('')}</div>
       </div>`;
     } else {
-      // Future days — collapsible
-      const dayName = formatDate(date);
-      html += `<div class="future-day">
+      html+=`<div class="future-day">
         <div class="future-day-header" id="h_${dateId}" onclick="toggleDay('${dateId}')">
-          <div class="future-day-title">
-            📅 ${dayName}
-          </div>
+          <div class="future-day-title">📅 ${formatDate(date)}</div>
           <div style="display:flex;align-items:center;gap:1rem">
             <div class="future-day-meta">
               <span class="badge b-open">${freeCount} wolnych</span>
@@ -361,23 +367,20 @@ function render(){
       </div>`;
     }
   });
-
-  el.innerHTML = html;
+  el.innerHTML=html;
 }
 
 function renderSlot(s){
   const isFull=s.package_type&&s.spots_left<=0;
   const maxDots=s.max_players||(s.package_type?PKG[s.package_type].max:3);
   const taken=s.bookings||[];
-  const isIncomplete = s.package_type && s.package_type !== 'solo' && s.booked_count > 0 && s.spots_left > 0;
-
+  const isIncomplete=s.package_type&&s.package_type!=='solo'&&s.booked_count>0&&s.spots_left>0;
   let dots='';
   for(let i=0;i<maxDots;i++){
     const b=taken[i];
     if(b) dots+=`<div class="pdot taken" title="${b.char_name} (${b.char_class} poz.${b.char_level})">⚔️</div>`;
     else dots+=`<div class="pdot empty">?</div>`;
   }
-
   let priceHint='';
   if(s.package_type){
     priceHint=`<div style="font-size:.75rem;color:var(--gold-l);">${PKG[s.package_type].icon} ${PKG[s.package_type].name} · ${PKG[s.package_type].price.toLocaleString()} SM/h</div>`;
@@ -388,14 +391,12 @@ function renderSlot(s){
   } else {
     priceHint=`<div style="font-size:.75rem;color:var(--text-m)">Typ ustali pierwszy gracz</div>`;
   }
-
   const partyOpen=s.is_open_party;
-  const waitingBanner = isIncomplete ? `
+  const waitingBanner=isIncomplete?`
     <div class="waiting-banner">
       ⏳ Slot wystartuje gdy będzie komplet
       <button class="btn btn-xs" style="background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-d);margin-left:auto" onclick="event.stopPropagation();openPartyModal()">🔮 Szukam party</button>
-    </div>` : '';
-
+    </div>`:'';
   return `<div class="slot-card ${isFull?'full':''} ${partyOpen?'party-open':''}">
     ${partyOpen?'<div class="party-badge" style="margin-bottom:.6rem">🔮 Szuka graczy do party!</div>':''}
     <div class="slot-time">${s.time}</div>
@@ -421,6 +422,8 @@ function openBook(id,date,time,pkg,spotsLeft){
   document.getElementById('bLevel').value='';
   document.getElementById('bDiscord').value='';
   document.getElementById('bLFP').checked=false;
+  document.getElementById('bHours').value='1';
+  updateHoursLabel(1);
   if(typeof hcaptcha!=='undefined') hcaptcha.reset();
   const pkgSection=document.getElementById('pkgSection');
   const lfpSection=document.getElementById('lfpSection');
@@ -457,6 +460,7 @@ function selectPkg(k){
   document.querySelectorAll('.pkg-opt').forEach(el=>el.classList.remove('selected'));
   document.getElementById('pkg_'+k)?.classList.add('selected');
   document.getElementById('lfpSection').style.display=k!=='solo'?'':'none';
+  updateHoursLabel(document.getElementById('bHours').value);
 }
 
 function selectEq(k){
@@ -476,22 +480,26 @@ async function submitBooking(){
   const lvl=document.getElementById('bLevel').value;
   const discord=document.getElementById('bDiscord').value.trim();
   const lfp=document.getElementById('bLFP').checked;
+  const hours=document.getElementById('bHours').value;
   if(!selectedPkg){alertEl.innerHTML='<div class="alert alert-error">Wybierz pakiet.</div>';return;}
   if(!name||!cls||!lvl||!discord){alertEl.innerHTML='<div class="alert alert-error">Wypełnij wszystkie wymagane pola.</div>';return;}
   const captchaResp=typeof hcaptcha!=='undefined'?hcaptcha.getResponse():'';
   if(!captchaResp){alertEl.innerHTML='<div class="alert alert-error">Potwierdź że nie jesteś robotem.</div>';return;}
   btn.disabled=true;btn.textContent='Rezerwowanie...';
-  const res=await fetch(`/api/slots/${selectedSlotId}/book`,{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({char_name:name,char_class:cls,char_level:lvl,contact_discord:discord,
-      package_type:selectedPkg,equipment_rental:selectedEq,looking_for_party:lfp,hcaptcha_token:captchaResp})
+  const res=await fetch('/api/slots/book-multi',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({slot_id:selectedSlotId,hours,char_name:name,char_class:cls,char_level:lvl,
+      contact_discord:discord,package_type:selectedPkg,equipment_rental:selectedEq,
+      looking_for_party:lfp,hcaptcha_token:captchaResp})
   }).then(r=>r.json());
   if(res.success){
     const statusUrl=location.origin+'/status?token='+res.statusToken;
+    const timesStr=res.times?res.times.join(', '):'';
     document.querySelector('.modal').innerHTML=`
       <div style="text-align:center;padding:1rem">
         <div style="font-size:3.5rem;margin-bottom:.8rem">🎉</div>
         <div class="modal-title" style="text-align:center">Rezerwacja złożona!</div>
-        <p style="color:var(--text-m);margin-bottom:1.3rem;font-size:.9rem">Ekipa potwierdzi przez Discord. Zapisz link do śledzenia statusu.</p>
+        <p style="color:var(--text-m);margin-bottom:.5rem;font-size:.9rem">Zarezerwowano <strong style="color:var(--gold-l)">${res.bookedSlots}h</strong> expienia: <strong style="color:var(--text-b)">${timesStr}</strong></p>
+        <p style="color:var(--text-m);margin-bottom:1.3rem;font-size:.88rem">Ekipa potwierdzi przez Discord.</p>
         <div style="background:#0a0e1a;border:1px solid var(--border);border-radius:var(--r);padding:.9rem;margin-bottom:1.2rem">
           <div style="font-family:'Cinzel',serif;font-size:.65rem;color:var(--text-m);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.4rem">🔗 Link do statusu</div>
           <div style="color:var(--gold-l);font-size:.82rem;word-break:break-all">${statusUrl}</div>
