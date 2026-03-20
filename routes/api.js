@@ -301,14 +301,12 @@ router.get('/api/reviews', async (req, res) => {
 });
 
 router.post('/api/reviews', async (req, res) => {
-  const { token, rating, comment, reviewer_name } = req.body;
-  if (!token || !rating) return res.json({ success: false, error: 'Brak danych.' });
-  const booking = await db.get2("SELECT * FROM bookings WHERE status_token=? AND status='done'", [token]);
-  if (!booking) return res.json({ success: false, error: 'Nie mozna ocenic tej rezerwacji.' });
-  const existing = await db.get2('SELECT id FROM reviews WHERE booking_id=?', [booking.id]);
-  if (existing) return res.json({ success: false, error: 'Juz oceniono.' });
+  const { char_name, rating, comment } = req.body;
+  if (!rating || !char_name) return res.json({ success: false, error: 'Podaj nazwe postaci i ocene.' });
+  if (rating < 1 || rating > 5) return res.json({ success: false, error: 'Nieprawidlowa ocena.' });
+
   await db.run2('INSERT INTO reviews (booking_id, rating, comment, reviewer_name) VALUES (?,?,?,?)',
-    [booking.id, rating, comment || '', reviewer_name || booking.char_name]);
+    [0, rating, comment || '', char_name.trim()]);
   res.json({ success: true });
 });
 
