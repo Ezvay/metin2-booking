@@ -293,8 +293,8 @@ router.get('/api/status/:token', async (req, res) => {
 // ── PUBLIC: REVIEWS ───────────────────────────────────────────
 router.get('/api/reviews', async (req, res) => {
   const reviews = await db.all2(`
-    SELECT r.*, b.package_type FROM reviews r
-    JOIN bookings b ON r.booking_id = b.id
+    SELECT r.*, COALESCE(b.package_type, '') as package_type FROM reviews r
+    LEFT JOIN bookings b ON r.booking_id = b.id
     ORDER BY r.created_at DESC LIMIT 12
   `);
   res.json(reviews);
