@@ -546,17 +546,50 @@ async function submitBooking(){
 }
 
 fetch('/api/reviews').then(r=>r.json()).then(reviews=>{
-  const el=document.getElementById('reviewsList');
-  if(!reviews.length){el.innerHTML='<p style="text-align:center;color:var(--text-m);font-style:italic">Brak opinii. Bądź pierwszy!</p>';return;}
-  const avg=reviews.reduce((a,r)=>a+r.rating,0)/reviews.length;
-  document.getElementById('statRating').textContent=avg.toFixed(1)+' ⭐';
-  el.innerHTML=`<div class="grid-2">${reviews.slice(0,4).map(r=>`
+let homeRating = 0;
+
+function setReviewRating(r) {
+  homeRating = r;
+  document.querySelectorAll('#reviewStars .star').forEach((s,i) => s.classList.toggle('on', i < r));
+}
+
+async function submitHomeReview() {
+  const charName = document.getElementById('reviewCharName').value.trim();
+  const comment = document.getElementById('reviewComment').value.trim();
+  const alertEl = document.getElementById('reviewFormAlert');
+  if (!charName) { alertEl.innerHTML = '<div class="alert alert-error">Wpisz nazwę postaci.</div>'; return; }
+  if (!homeRating) { alertEl.innerHTML = '<div class="alert alert-error">Wybierz ocenę.</div>'; return; }
+  const res = await fetch('/api/reviews', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ char_name: charName, rating: homeRating, comment })
+  }).then(r => r.json());
+  if (res.success) {
+    alertEl.innerHTML = '<div class="alert alert-success">Dziękujemy za opinię! 🎉</div>';
+    document.getElementById('reviewCharName').value = '';
+    document.getElementById('reviewComment').value = '';
+    homeRating = 0;
+    document.querySelectorAll('#reviewStars .star').forEach(s => s.classList.remove('on'));
+    fetch('/api/reviews').then(r=>r.json()).then(renderReviews);
+  } else {
+    alertEl.innerHTML = `<div class="alert alert-error">${res.error}</div>`;
+  }
+}
+
+function renderReviews(reviews) {
+  const el = document.getElementById('reviewsList');
+  if (!reviews.length) { el.innerHTML = '<p style="text-align:center;color:var(--text-m);font-style:italic">Brak opinii. Bądź pierwszy!</p>'; return; }
+  const avg = reviews.reduce((a,r) => a + r.rating, 0) / reviews.length;
+  document.getElementById('statRating').textContent = avg.toFixed(1) + ' ⭐';
+  el.innerHTML = `<div class="grid-2">${reviews.slice(0,4).map(r => `
     <div class="review-card">
       <div style="color:var(--gold-l);margin-bottom:.3rem">${'⭐'.repeat(r.rating)}</div>
       <div style="color:var(--text);margin-bottom:.3rem">"${r.comment||'Brak komentarza'}"</div>
       <div style="color:var(--text-m);font-size:.78rem">— ${r.reviewer_name} · ${PKG[r.package_type]?.name||''}</div>
     </div>`).join('')}</div>`;
-});
+}
+
+fetch('/api/reviews').then(r=>r.json()).then(renderReviews);
 
 load();
 </script>
