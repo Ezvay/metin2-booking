@@ -9,6 +9,37 @@ const { sendBookingNotification, handleInteraction } = require('../discord');
 
 const HCAPTCHA_SECRET = process.env.HCAPTCHA_SECRET;
 
+// Auto-cancel expired bookings
+async function cancelExpiredBookings() {
+  try {
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const currentTime = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+    // Get all past slots
+    const expiredSlots = await db.all2(`
+      SELECT id FROM slots
+      WHERE status = 'open' AND (
+        date < ? OR (date = ? AND time <= ?)
+      )
+    `, [today, today, currentTime]);
+
+    for (const slot of expiredSlots) {
+      await db.run2("UPDATE slots SET status='closed' WHERE id=?", [slot.id]);
+      await db.run2(
+        "UPDATE bookings SET status='cancelled' WHERE slot_id=? AND status='pending'",
+        [slot.id]
+      );
+    }
+  } catch(e) {
+    console.error('cancelExpiredBookings error:', e);
+  }
+}
+
+// Run on startup and every hour
+cancelExpiredBookings();
+setInterval(cancelExpiredBookings, 60 * 60 * 1000);
+
 async function verifyHcaptcha(token) {
   if (!HCAPTCHA_SECRET) return true;
   return new Promise((resolve) => {
