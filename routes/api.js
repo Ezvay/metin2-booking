@@ -290,7 +290,7 @@ router.post('/api/admin/slots/generate', requireAdmin, async (req, res) => {
   }
   let created = 0;
   for (const time of slots) {
-    const existing = await db.get2('SELECT id FROM slots WHERE date=? AND time=? AND admin_id=?', [date, time, req.session.adminId]);
+    const existing = await db.get2('SELECT id FROM slots WHERE date=? AND time=? AND admin_id=? AND status != ?', [date, time, req.session.adminId, 'deleted']);
     if (!existing) {
       await db.run2('INSERT INTO slots (admin_id, date, time, note) VALUES (?,?,?,?)', [req.session.adminId, date, time, note || '']);
       created++;
