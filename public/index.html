@@ -545,8 +545,7 @@ async function submitBooking(){
   }
 }
 
-fetch('/api/reviews').then(r=>r.json()).then(reviews=>{
-let homeRating = 0;
+fetch('/api/reviews')let homeRating = 0;
 
 function setReviewRating(r) {
   homeRating = r;
@@ -591,6 +590,10 @@ function renderReviews(reviews) {
 
 fetch('/api/reviews').then(r=>r.json()).then(renderReviews);
 
+load();
+</script>
+</body>
+</html>
 load();
 </script>
 </body>
