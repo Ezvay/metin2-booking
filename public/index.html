@@ -10,6 +10,16 @@
     .day-group{margin-bottom:2rem;}
     .savings-banner{background:linear-gradient(135deg,#003020,#004030);border:1px solid #006040;border-radius:var(--r);padding:.8rem 1.1rem;margin-bottom:1.5rem;font-size:.88rem;color:var(--green);}
     .waiting-banner{background:linear-gradient(135deg,#1a1000,#2a1800);border:1px solid var(--gold-d);border-radius:4px;padding:.4rem .7rem;font-size:.75rem;color:var(--gold);margin-top:.4rem;display:flex;align-items:center;gap:.4rem;}
+    .future-day{margin-bottom:.6rem;}
+    .future-day-header{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:border-color .2s;}
+    .future-day-header:hover{border-color:var(--gold-d);}
+    .future-day-header.open{border-color:var(--gold-d);border-bottom-left-radius:0;border-bottom-right-radius:0;}
+    .future-day-title{font-family:'Cinzel',serif;font-size:.85rem;color:var(--text-b);display:flex;align-items:center;gap:.6rem;}
+    .future-day-meta{font-size:.78rem;color:var(--text-m);display:flex;align-items:center;gap:.8rem;}
+    .future-day-arrow{color:var(--gold-d);transition:transform .25s;font-size:.85rem;}
+    .future-day-header.open .future-day-arrow{transform:rotate(180deg);}
+    .future-day-body{display:none;padding:1rem;background:#0a0c16;border:1px solid var(--gold-d);border-top:none;border-bottom-left-radius:var(--r);border-bottom-right-radius:var(--r);}
+    .future-day-body.open{display:block;}
   </style>
 </head>
 <body>
@@ -42,7 +52,6 @@
     </div>
   </section>
 
-  <!-- SLOTS -->
   <section class="section">
     <div class="wrap">
       <h2 class="section-title">Dostępne <span>Terminy</span></h2>
@@ -62,7 +71,6 @@
     </div>
   </section>
 
-  <!-- EQP RENTAL -->
   <section class="section" style="background:linear-gradient(180deg,transparent,#0d1220 30%,#0d1220 70%,transparent)">
     <div class="wrap">
       <h2 class="section-title">Wynajem <span>Ekwipunku</span></h2>
@@ -95,7 +103,6 @@
     </div>
   </section>
 
-  <!-- TEAM -->
   <section class="section">
     <div class="wrap">
       <h2 class="section-title">Nasza <span>Ekipa</span></h2>
@@ -117,7 +124,6 @@
     </div>
   </section>
 
-  <!-- REVIEWS -->
   <section class="section">
     <div class="wrap">
       <h2 class="section-title">Opinie <span>Graczy</span></h2>
@@ -191,9 +197,9 @@ let slots=[], filter='all', selectedSlotId=null, selectedPkg=null, selectedEq='n
 
 const TEAM = [
   { display: 'Ezvay',    nick: 'ezvay',           serverNick: 'ezvay',    id: '269140484721475606' },
-  { display: 'Judaszek',   nick: 'prezesjaroslaw_',  serverNick: 'judaszek', id: '743808864981352559' },
-  { display: 'Yodasz',    nick: 'jarekkaczka',      serverNick: 'yodasz',   id: '513676603696611330' },
-  { display: 'Bieluch', nick: 'bielluch',         serverNick: 'bielluch', id: '449211767890116629' },
+  { display: 'Prezes',   nick: 'prezesjaroslaw_',  serverNick: 'judaszek', id: '743808864981352559' },
+  { display: 'Jarek',    nick: 'jarekkaczka',      serverNick: 'yodasz',   id: '513676603696611330' },
+  { display: 'Bielluch', nick: 'bielluch',         serverNick: 'bielluch', id: '449211767890116629' },
   { display: 'Marco',    nick: 'xmarco0',          serverNick: 'marco',    id: '238942736043081729' },
 ];
 
@@ -242,11 +248,6 @@ function copyNick(nick, btn) {
   setTimeout(() => btn.textContent = '📋', 2000);
 }
 
-function getOnlineMember() {
-  const online = teamWithStatus.filter(m => m.online);
-  return online.length > 0 ? online[0] : teamWithStatus[0];
-}
-
 function openPartyModal() {
   const sorted = [...teamWithStatus].sort((a,b) => b.online - a.online);
   document.getElementById('partyContactList').innerHTML = sorted.map(m => `
@@ -288,33 +289,80 @@ function setFilter(f,btn){
   render();
 }
 
+function toggleDay(id) {
+  const header = document.getElementById('h_'+id);
+  const body = document.getElementById('b_'+id);
+  header.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
 function render(){
   const el=document.getElementById('slotsContent');
+  const today=new Date().toISOString().split('T')[0];
+
   let list=slots;
   if(filter==='open') list=slots.filter(s=>!s.package_type||(s.spots_left>0));
   else if(filter==='party') list=slots.filter(s=>s.is_open_party);
   else if(filter==='solo') list=slots.filter(s=>s.package_type==='solo'||!s.package_type);
   else if(filter==='duo') list=slots.filter(s=>s.package_type==='duo');
   else if(filter==='trio') list=slots.filter(s=>s.package_type==='trio');
+
   list=list.sort((a,b)=>{
     if(a.is_open_party&&!b.is_open_party) return -1;
     if(!a.is_open_party&&b.is_open_party) return 1;
     if(a.date!==b.date) return a.date>b.date?1:-1;
     return a.time>b.time?1:-1;
   });
+
   if(!list.length){
-    el.innerHTML=`<div style="text-align:center;padding:3rem;color:var(--text-m)"><p style="font-size:2.5rem;margin-bottom:1rem">📭</p><p>Brak dostępnych terminów.</p><p style="margin-top:.5rem;font-size:.88rem">Sprawdź później lub obserwuj Discord.</p></div>`;
+    el.innerHTML=`<div style="text-align:center;padding:3rem;color:var(--text-m)"><p style="font-size:2.5rem;margin-bottom:1rem">📭</p><p>Brak dostępnych terminów.</p></div>`;
     return;
   }
+
   const byDate={};
   list.forEach(s=>{(byDate[s.date]=byDate[s.date]||[]).push(s);});
-  el.innerHTML=Object.entries(byDate).map(([date,daySlots])=>{
-    const isToday=date===new Date().toISOString().split('T')[0];
-    return `<div class="day-group">
-      <div class="day-label">📅 ${formatDate(date)}${isToday?' <span style="background:var(--gold);color:#1a1000;padding:.1rem .4rem;border-radius:3px;font-size:.62rem;font-family:Cinzel,serif">DZIŚ</span>':''}</div>
-      <div class="grid-3">${daySlots.map(renderSlot).join('')}</div>
-    </div>`;
-  }).join('');
+
+  let html = '';
+
+  Object.entries(byDate).forEach(([date, daySlots]) => {
+    const isToday = date === today;
+    const freeCount = daySlots.filter(s => !s.package_type || s.spots_left > 0).length;
+    const partyCount = daySlots.filter(s => s.is_open_party).length;
+    const dateId = date.replace(/-/g,'');
+
+    if (isToday) {
+      // Today — show normally
+      html += `<div class="day-group">
+        <div class="day-label">
+          📅 Dziś
+          <span style="background:var(--gold);color:#1a1000;padding:.1rem .4rem;border-radius:3px;font-size:.62rem;font-family:Cinzel,serif">DZIŚ</span>
+        </div>
+        <div class="grid-3">${daySlots.map(renderSlot).join('')}</div>
+      </div>`;
+    } else {
+      // Future days — collapsible
+      const dayName = formatDate(date);
+      html += `<div class="future-day">
+        <div class="future-day-header" id="h_${dateId}" onclick="toggleDay('${dateId}')">
+          <div class="future-day-title">
+            📅 ${dayName}
+          </div>
+          <div style="display:flex;align-items:center;gap:1rem">
+            <div class="future-day-meta">
+              <span class="badge b-open">${freeCount} wolnych</span>
+              ${partyCount>0?`<span class="badge b-party">${partyCount} szuka party</span>`:''}
+            </div>
+            <span class="future-day-arrow">▼</span>
+          </div>
+        </div>
+        <div class="future-day-body" id="b_${dateId}">
+          <div class="grid-3">${daySlots.map(renderSlot).join('')}</div>
+        </div>
+      </div>`;
+    }
+  });
+
+  el.innerHTML = html;
 }
 
 function renderSlot(s){
@@ -342,7 +390,6 @@ function renderSlot(s){
   }
 
   const partyOpen=s.is_open_party;
-
   const waitingBanner = isIncomplete ? `
     <div class="waiting-banner">
       ⏳ Slot wystartuje gdy będzie komplet
